@@ -15,8 +15,8 @@ data 里面才是 正真的实体类，
 {
 	"success":true,             //请求返回状态码 true表示成功
 	"msg": "请求成功",          //请求返回状态
-    "errorNo": "1",             //请错误码
-    "failDesc": "错误原因",     //错误原因
+        "errorNo": "1",             //请错误码
+        "failDesc": "错误原因",     //错误原因
 	"data":
 	{    //返回结果
 		"name": "2",   
@@ -25,7 +25,7 @@ data 里面才是 正真的实体类，
 }
 ```
 
-对于这种数据类型 本框架 提供两种 解析方案
+对于这种数据类型 本框架 提供两种 解决方案
 ### 方案1 自定义 Converter.Factory 对请求结果json 统一解析
 代码片段如下
 ```java
@@ -33,8 +33,6 @@ data 里面才是 正真的实体类，
     public T convert( ResponseBody value) throws IOException {
         try {
             String result = value.string();
-            //对返回的结果进行解密 使用Dev
-            //AppLog.e(result);
             JSONObject response = new JSONObject(result);
             boolean success = response.optBoolean("success");
             if (success) {

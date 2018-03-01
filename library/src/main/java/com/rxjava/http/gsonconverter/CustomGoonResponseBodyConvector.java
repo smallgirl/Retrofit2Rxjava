@@ -26,8 +26,6 @@ public class CustomGoonResponseBodyConvector<T> implements Converter<ResponseBod
     public T convert( ResponseBody value) throws IOException {
         try {
             String result = value.string();
-            //对返回的结果进行解密 使用Dev
-            //AppLog.e(result);
             JSONObject response = new JSONObject(result);
             boolean success = response.optBoolean("success");
             if (success) {
