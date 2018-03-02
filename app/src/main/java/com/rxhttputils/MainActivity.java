@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.rxhttputils.api.ApiService;
-import com.rxhttputils.bean.Ads;
+import com.rxhttputils.bean.User;
 import com.rxjava.http.RetrofitClient;
 import com.rxjava.http.download.DownloadObserver;
 import com.rxjava.http.exception.ApiException;
@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .getInstance()
                         .showLog(true)
                         .creatApiService(ApiService.class)
-                        .getAds1()
-                        .compose(Transformer.<Ads>switchSchedulers(loading_dialog))
-                        .subscribe(new BaseObserver<Ads>() {
+                        .getUser()
+                        .compose(Transformer.<User>switchSchedulers(loading_dialog))
+                        .subscribe(new BaseObserver<User>() {
                             @Override
                             public void onError(ApiException exception) {
                                 responseTv.setText("onError"+exception.message+exception.code);
@@ -73,20 +73,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
 
                             @Override
-                            public void onSuccess(Ads ads) {
-                                responseTv.setText(ads.getAdvertUrl());
+                            public void onSuccess(User user) {
+                                responseTv.setText(user.getNickName());
                                 loading_dialog.dismiss();
                             }
                         });
+//                RetrofitClient
+//                        .getApiService(ApiService.class)
+//                        .getUserResponse()
+//                        .compose(new DefaultTransformer<User>())
+//                        .subscribe(new BaseObserver<User>() {
+//                            @Override
+//                            public void onError(ApiException exception) {
+//                                responseTv.setText("onError"+exception.message+exception.code);
+//                                loading_dialog.dismiss();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(User user) {
+//                                responseTv.setText(user.getNickName());
+//                                loading_dialog.dismiss();
+//                            }
+//                        });
+               // 是用该方法 先将 CustomGoonResponseBodyConvector 中的
+               //return adapter.fromJson(response.getString("data")); 换成  return adapter.fromJson(result);
                 break;
             case R.id.global_http:
                 RetrofitClient
                         .getApiService(ApiService.class)
-                        .getAds1()
-                        .compose(Transformer.<Ads>switchSchedulers(loading_dialog))
-//                        .getAds()
-//                        .compose(new DefaultTransformer<Ads>())
-                        .subscribe(new BaseObserver<Ads>() {
+                        .getUserList()
+                        .compose(Transformer.<List<User>>switchSchedulers(loading_dialog))
+                        .subscribe(new BaseObserver<List<User>>() {
                             @Override
                             public void onError(ApiException exception) {
                                 responseTv.setText("onError"+exception.message+exception.code);
@@ -94,8 +111,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
 
                             @Override
-                            public void onSuccess(Ads ads) {
-                                responseTv.setText(ads.getAdvertUrl());
+                            public void onSuccess(List<User> userList) {
+                                String name="";
+                                for ( User user:userList){
+                                    name=name+"   "+user.getNickName();
+                                }
+                                responseTv.setText(name);
                                 loading_dialog.dismiss();
                             }
                         });

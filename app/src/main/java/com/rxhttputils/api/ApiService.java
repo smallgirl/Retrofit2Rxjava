@@ -1,12 +1,13 @@
 package com.rxhttputils.api;
 
 
-import com.rxhttputils.bean.Ads;
+import com.rxhttputils.bean.User;
 import com.rxjava.http.transformer.Response;
+
+import java.util.List;
 
 import io.reactivex.Observable;
 import retrofit2.http.GET;
-import retrofit2.http.Headers;
 
 /**
  * Created by wanghaitao on 2018/2/28.
@@ -16,12 +17,13 @@ import retrofit2.http.Headers;
 
 public interface ApiService {
 
-    @Headers("REQUESTTYPE:UR_AdvertLogon")
-    @GET("http://service.jd100.com/cgi-bin/phone/")
-    Observable <Response<Ads>> getAds();
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <User> getUser();
 
-    @Headers("REQUESTTYPE:UR_AdvertLogon")
-    @GET("http://service.jd100.com/cgi-bin/phone/")
-    Observable <Ads> getAds1();
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <Response<User>> getUserResponse();
+
+    @GET("http://zzuli.gitee.io/api/userlist.html")
+    Observable <List<User>> getUserList();
 
 }

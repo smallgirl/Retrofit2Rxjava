@@ -13,15 +13,9 @@ data 里面才是 正真的实体类，
 
 ```json
 {
-	"success":true,             //请求返回状态码 true表示成功
-	"msg": "请求成功",          //请求返回状态
-        "errorNo": "1",             //请错误码
-        "failDesc": "错误原因",     //错误原因
-	"data":
-	{    //返回结果
-		"name": "2",   
-		"sex": "0", 
-	}
+    "code": int,   //请求返回状态码 0表示成功
+    "msg":String, // 存放错误信息
+    "data": {} || "data": [] 
 }
 ```
 
@@ -29,19 +23,18 @@ data 里面才是 正真的实体类，
 ### 方案1 自定义 Converter.Factory 对请求结果json 统一解析
 代码片段如下
 ```java
-  @Override
+    @Override
     public T convert( ResponseBody value) throws IOException {
         try {
             String result = value.string();
             JSONObject response = new JSONObject(result);
-            boolean success = response.optBoolean("success");
-            if (success) {
+            int code = response.optInt("code");
+            if (ErrorType.SUCCESS==code) {
                // return adapter.fromJson(result);
                 return adapter.fromJson(response.getString("data"));//解析data数据
             }else {
-                final int errorNo = response.optInt("errorNo", -1);
-                String message = response.optString("failDesc", "");
-                throw new ServerException(errorNo, message);
+                String message = response.optString("msg", "");
+                throw new ServerException(code, message);
             }
 
         } catch (JSONException e) {
@@ -55,34 +48,49 @@ data 里面才是 正真的实体类，
 下面是例子
 ```java
 
-public class Ads implements Serializable {
- 
-    public String getAdvertUrl() {
-        return advertUrl;
-    }
-    public void setAdvertUrl(String advertUrl) {
-        this.advertUrl = advertUrl;
-    }
-    private String advertUrl;
+public class User {
 
+    /**
+     * nickName : 用户001
+     * sex : 0
+     */
+
+    private String nickName;
+    private int sex;
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    public int getSex() {
+        return sex;
+    }
+
+    public void setSex(int sex) {
+        this.sex = sex;
+    }
 }
 public interface ApiService {
 
-    @Headers("REQUESTTYPE:UR_AdvertLogon")
-    @GET("http://service.jd100.com/cgi-bin/phone/")
-    Observable <Response<Ads>> getAds();
-
-    @Headers("REQUESTTYPE:UR_AdvertLogon")
-    @GET("http://service.jd100.com/cgi-bin/phone/")
-    Observable <Ads> getAds1();
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <User> getUser();
+    
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <Response<User>> getUserResponse();
 
 }
 
 RetrofitClient
-        .getApiService(ApiService.class)
-        .getAds1()
-        .compose(Transformer.<Ads>switchSchedulers(loading_dialog))
-        .subscribe(new BaseObserver<Ads>() {
+        .getInstance()
+        .showLog(true)
+        .creatApiService(ApiService.class)
+        .getUser()
+        .compose(Transformer.<User>switchSchedulers(loading_dialog))
+        .subscribe(new BaseObserver<User>() {
             @Override
             public void onError(ApiException exception) {
                 responseTv.setText("onError"+exception.message+exception.code);
@@ -90,15 +98,14 @@ RetrofitClient
             }
 
             @Override
-            public void onSuccess(Ads ads) {
-                responseTv.setText(ads.getAdvertUrl());
+            public void onSuccess(User user) {
+                responseTv.setText(user.getNickName());
                 loading_dialog.dismiss();
             }
         });
-  
 
 ```
-我们的Ads 就是data 里面的数据，完全不用在建立一个对象包裹着ads 对象
+我们的User 就是data 里面的数据，完全不用在建立一个Response类包裹着User
 ### 方案2 同过操作符 对对象进行转换
 
 ```java
@@ -124,9 +131,9 @@ public class DefaultTransformer<T> implements ObservableTransformer<Response<T>,
 }
 RetrofitClient
     .getApiService(ApiService.class)
-    .getAds()
-    .compose(new DefaultTransformer<Ads>())
-    .subscribe(new BaseObserver<Ads>() {
+    .getUserResponse()
+    .compose(new DefaultTransformer<User>())
+    .subscribe(new BaseObserver<User>() {
         @Override
         public void onError(ApiException exception) {
             responseTv.setText("onError"+exception.message+exception.code);
@@ -134,8 +141,8 @@ RetrofitClient
         }
 
         @Override
-        public void onSuccess(Ads ads) {
-            responseTv.setText(ads.getAdvertUrl());
+        public void onSuccess(User user) {
+            responseTv.setText(user.getNickName());
             loading_dialog.dismiss();
         }
     });

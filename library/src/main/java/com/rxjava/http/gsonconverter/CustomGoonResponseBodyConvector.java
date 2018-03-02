@@ -1,5 +1,6 @@
 package com.rxjava.http.gsonconverter;
 
+import com.rxjava.http.exception.ErrorType;
 import com.rxjava.http.exception.ServerException;
 import com.google.gson.TypeAdapter;
 
@@ -27,14 +28,13 @@ public class CustomGoonResponseBodyConvector<T> implements Converter<ResponseBod
         try {
             String result = value.string();
             JSONObject response = new JSONObject(result);
-            boolean success = response.optBoolean("success");
-            if (success) {
+            int code = response.optInt("code");
+            if (ErrorType.SUCCESS==code) {
                // return adapter.fromJson(result);
                 return adapter.fromJson(response.getString("data"));//解析data数据
             }else {
-                final int errorNo = response.optInt("errorNo", -1);
-                String message = response.optString("failDesc", "");
-                throw new ServerException(errorNo, message);
+                String message = response.optString("msg", "");
+                throw new ServerException(code, message);
             }
 
         } catch (JSONException e) {
