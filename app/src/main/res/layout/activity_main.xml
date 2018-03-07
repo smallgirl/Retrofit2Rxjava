@@ -15,13 +15,13 @@
             android:id="@+id/single_http"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="单个请求---自己配置请求基础参数" />
+            android:text="单个自定义请求" />
 
         <Button
             android:id="@+id/global_http"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="统一请求---使用全局配置的相关参数" />
+            android:text="统一请求" />
 
 
         <Button
@@ -34,7 +34,7 @@
             android:id="@+id/upload_http"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="上传图片---待完善" />
+            android:text="上传图片" />
 
         <TextView
             android:id="@+id/response_tv"

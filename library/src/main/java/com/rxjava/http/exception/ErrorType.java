@@ -20,11 +20,17 @@ public interface ErrorType {
      */
     int PARSE_ERROR = 1001;
     /**
-     * 网络错误
+     * 没有网络
      */
-    int NETWORD_ERROR = 1002;
+    int NO_NETWORK = 1002;
+    /**
+     * 网络错误 请求超时等
+     */
+    int NETWORK_ERROR = 1003;
     /**
      * 协议出错 404 500 等
      */
-    int HTTP_ERROR = 1003;
+    int HTTP_ERROR = 1004;
+
+    int RUN_TIME= 1005;
 }

@@ -38,7 +38,7 @@ public class CustomGoonResponseBodyConvector<T> implements Converter<ResponseBod
             }
 
         } catch (JSONException e) {
-            throw new ServerException(-1, "JSON解析异常");
+            throw new ServerException(ErrorType.PARSE_ERROR, "JSON解析异常");
 
         }
     }

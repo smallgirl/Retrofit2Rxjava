@@ -4,11 +4,13 @@ import android.util.Log;
 
 import com.google.gson.JsonParseException;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.net.UnknownServiceException;
 import java.text.ParseException;
 
 import retrofit2.HttpException;
@@ -20,6 +22,7 @@ import retrofit2.HttpException;
  */
 
 public class ExceptionEngine {
+
     //对应HTTP的状态码
     private static final int UNAUTHORIZED = 401;
     private static final int FORBIDDEN = 403;
@@ -30,12 +33,12 @@ public class ExceptionEngine {
     private static final int SERVICE_UNAVAILABLE = 503;
     private static final int GATEWAY_TIMEOUT = 504;
 
-    public static ApiException handleException(Throwable e){
-        Log.e("e",e.getMessage()+e);
+    public static ApiException handleException(Throwable throwable){
+        Log.e("e",throwable.getMessage()+throwable);
         ApiException ex;
-        if (e instanceof HttpException){             //HTTP错误
-            HttpException httpException = (HttpException) e;
-            ex = new ApiException(e, ErrorType.HTTP_ERROR);
+        if (throwable instanceof HttpException){             //HTTP错误
+            HttpException httpException = (HttpException) throwable;
+            ex = new ApiException(throwable, ErrorType.HTTP_ERROR);
             switch(httpException.code()){
                 case UNAUTHORIZED:
                     ex.message = "当前请求需要用户验证";
@@ -50,45 +53,49 @@ public class ExceptionEngine {
                     ex.message = "请求超时";
                     break;
                 case GATEWAY_TIMEOUT:
-                    ex.message = "作为网关或者代理工作的服务器尝试执行请求时，未能及时从上游服务器（URI标识出的服务器，例如HTTP、FTP、LDAP）或者辅助服务器（例如DNS）收到响应";
+                    ex.message = "服务器没有从远端服务器得到及时的响应";
                     break;
                 case INTERNAL_SERVER_ERROR:
-                    ex.message = "服务器遇到了一个未曾预料的状况，导致了它无法完成对请求的处理";
+                    ex.message = "服务器内部错误";
                     break;
                 case BAD_GATEWAY:
-                    ex.message = "作为网关或者代理工作的服务器尝试执行请求时，从上游服务器接收到无效的响应";
+                    ex.message = "服务器接收到远端服务器的错误响应";
                     break;
                 case SERVICE_UNAVAILABLE:
-                    ex.message = "由于临时的服务器维护或者过载，服务器当前无法处理请求";
+                    ex.message = "服务器维护或者过载，服务器当前无法处理请求";
                     break;
                 default:
                     ex.message = "网络错误";  //其它均视为网络错误
                     break;
             }
-            return ex;
-        } else if (e instanceof ServerException){    //服务器返回的错误
-            ServerException resultException = (ServerException) e;
+        } else if (throwable instanceof ServerException){    //服务器返回的错误
+            ServerException resultException = (ServerException) throwable;
             ex = new ApiException(resultException, resultException.code);
             ex.message = resultException.message;
             return ex;
-        } else if (e instanceof JsonParseException
-                || e instanceof JSONException
-                || e instanceof ParseException){
-            ex = new ApiException(e, ErrorType.PARSE_ERROR);
-            ex.message = "解析错误";            //均视为解析错误
-            return ex;
-        }else if(e instanceof ConnectException
-                || e instanceof SocketTimeoutException
-                || e instanceof ConnectTimeoutException){
-            ex = new ApiException(e, ErrorType.NETWORD_ERROR);
-            ex.message = "连接失败";  //均视为网络错误
-            return ex;
+        }  else if (throwable instanceof SocketTimeoutException) {
+            ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
+            ex.message ="服务器响应超时";
+        } else if (throwable instanceof ConnectException) {
+            ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
+            ex.message = "网络连接异常，请检查网络";
+        }  else if (throwable instanceof UnknownHostException || throwable instanceof UnknownServiceException || throwable instanceof IOException) {
+            ex = new ApiException(throwable, ErrorType.NO_NETWORK);
+            ex.message = "设备当前未联网，请检查网络设置";
+        } else if (throwable instanceof RuntimeException) {
+            ex = new ApiException(throwable, ErrorType.RUN_TIME);
+            ex.message = "很抱歉,程序运行出现了错误";
+        }else if (throwable instanceof JsonParseException
+                || throwable instanceof JSONException
+                || throwable instanceof ParseException){
+            ex = new ApiException(throwable, ErrorType.PARSE_ERROR);
+            ex.message = "解析错误";
         }
         else {
-            ex = new ApiException(e, ErrorType.UNKNOWN);
-            ex.message = "未知错误";          //未知错误
-            return ex;
+            ex = new ApiException(throwable, ErrorType.UNKNOWN);
+            ex.message = "未知错误";
         }
+        return ex;
     }
 
 }

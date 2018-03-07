@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rxhttputils.api.ApiService;
 import com.rxhttputils.bean.User;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .subscribe(new BaseObserver<User>() {
                             @Override
                             public void onError(ApiException exception) {
-                                responseTv.setText("onError"+exception.message+exception.code);
+                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
                                 loading_dialog.dismiss();
                             }
 
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        .subscribe(new BaseObserver<User>() {
 //                            @Override
 //                            public void onError(ApiException exception) {
-//                                responseTv.setText("onError"+exception.message+exception.code);
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
 //                                loading_dialog.dismiss();
 //                            }
 //
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .subscribe(new BaseObserver<List<User>>() {
                             @Override
                             public void onError(ApiException exception) {
-                                responseTv.setText("onError"+exception.message+exception.code);
+                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
                                 loading_dialog.dismiss();
                             }
 
@@ -152,6 +153,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.upload_http:
                 String uploadUrl = "http://server.jeasonlzy.com/OkHttpUtils/upload";
                 String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"2.jpg";
+                if (!new File(file).exists()){
+                    Toast.makeText(this,"文件不存在",Toast.LENGTH_SHORT).show();
+                }
                 upload_http.setEnabled(false);
                 RetrofitClient
                         .uploadImg(uploadUrl, file, new UploadListener() {
@@ -174,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }, new Consumer<Throwable>() {
                             @Override
                             public void accept(@NonNull Throwable throwable) throws Exception {
-                                upload_http.setText( "上传失败");
+                                upload_http.setText( "上传失败"+throwable);
                             }
                         });
 
