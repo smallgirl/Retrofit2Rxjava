@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -162,6 +163,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                                 upload_http.setText( progress+"%");
+                                if (bytesWritten==contentLength){
+                                    upload_http.setText( "上传完毕");
+                                    Log.e("tag","上传完毕");
+                                }
                             }
                         })
                         .doFinally(new Action() {

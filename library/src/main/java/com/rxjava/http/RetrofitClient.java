@@ -151,14 +151,14 @@ public class RetrofitClient {
 
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
 
-        MultipartBody.Part body =
-                MultipartBody.Part.createFormData("uploaded_file", file.getName(), requestFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
         UpLoadProgressInterceptor interceptor = new UpLoadProgressInterceptor(listener);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
                 .retryOnConnectionFailure(true)
                 .connectTimeout(1000, TimeUnit.SECONDS)
+                .writeTimeout(1000, TimeUnit.SECONDS)
                 .build();
         String baseUrl = "https://api.github.com/";
         return new Retrofit.Builder()
