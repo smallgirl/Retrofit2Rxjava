@@ -29,6 +29,9 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
+/**
+ *
+ */
 public class RetrofitClient {
 
     private static final int DEFAULT_TIMEOUT = 20;
@@ -37,7 +40,16 @@ public class RetrofitClient {
 
     private static final String BASE_URL = "http://service.jd100.com/cgi-bin/phone/";
 
+    /**
+     * 取所有数据
+     */
     private static Retrofit retrofit;
+
+    /**
+     * 只取data 数据
+     */
+    private static Retrofit retrofitData;
+
     private static RetrofitClient instance;
 
     private String baseUrl;
@@ -57,34 +69,80 @@ public class RetrofitClient {
      * @return
      */
     public static <K> K getApiService(Class<K> cls)  {
-        if (retrofit == null) {
-            OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
-            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override
-                public void log(String message) {
-                    Log.e("RetrofitClient", message);
-                }
-            });
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            okhttpBuilder.addInterceptor(loggingInterceptor);
-            OkHttpClient okHttpClient = okhttpBuilder
-                    .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .writeTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                    .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .build();
-            retrofit = new Retrofit.Builder()
-                    .client(okHttpClient)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    //.addConverterFactory(GsonConverterFactory.create())
-                    .addConverterFactory(CustomGoonConvertFactory.create())
-                    .baseUrl(BASE_URL)
-                    .build();
-        }
-        return retrofit.create(cls);
+        return getApiService(cls,true);
     }
 
+
+    /**
+     * 通用的全局请求
+     * @param cls
+     * @param fromData
+     * @param <K>
+     * @return
+     */
+    public static <K> K getApiService(Class<K> cls,boolean fromData)  {
+
+        if (fromData){
+            if (retrofitData == null) {
+                retrofitData = new Retrofit.Builder()
+                        .client(getOkHttpClient())
+                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .addConverterFactory(CustomGoonConvertFactory.create(true))
+                        .baseUrl(BASE_URL)
+                        .build();
+            }
+            return retrofitData.create(cls);
+        }else {
+            if (retrofit == null) {
+                retrofit = new Retrofit.Builder()
+                        .client(getOkHttpClient())
+                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .addConverterFactory(CustomGoonConvertFactory.create(false))
+                        .baseUrl(BASE_URL)
+                        .build();
+            }
+            return retrofit.create(cls);
+        }
+    }
+
+    private static OkHttpClient getOkHttpClient (){
+        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                Log.e("RetrofitClient", message);
+            }
+        });
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        okhttpBuilder.addInterceptor(loggingInterceptor);
+        OkHttpClient okHttpClient = okhttpBuilder
+                .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+        return  okHttpClient;
+    }
+
+    /**
+     * 自定义的单个 请求
+     * @param cls
+     * @param <K>
+     * @return
+     */
     public  <K> K creatApiService(Class<K> cls)  {
+        return creatApiService(cls,true);
+    }
+
+
+    /**
+     * 自定义的单个 请求
+     * @param cls
+     * @param fromData
+     * @param <K>
+     * @return
+     */
+    public  <K> K creatApiService(Class<K> cls,boolean fromData)  {
         OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
         if (isShowLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -106,8 +164,7 @@ public class RetrofitClient {
         Retrofit retrofit = new Retrofit.Builder()
                 .client(okHttpClient)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-//                .addConverterFactory(GsonConverterFactory.create())
-                .addConverterFactory(CustomGoonConvertFactory.create())
+                .addConverterFactory(CustomGoonConvertFactory.create(fromData))
                 .baseUrl(TextUtils.isEmpty(baseUrl)?BASE_URL:baseUrl)
                 .build();
         // 重置
@@ -173,7 +230,6 @@ public class RetrofitClient {
     }
     /**
      * 下载文件
-     *
      * @param fileUrl
      * @return
      */

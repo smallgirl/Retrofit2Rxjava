@@ -24,10 +24,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
 
@@ -53,6 +57,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         download_http.setOnClickListener(this);
         upload_http = (Button) findViewById(R.id.upload_http);
         upload_http.setOnClickListener(this);
+
+//        final Observable<List<User> > cache=  Observable.create(new ObservableOnSubscribe<List<User>>() {
+//
+//
+//            @Override
+//            public void subscribe(ObservableEmitter<List<User> > e) throws Exception {
+//                Log.e("tag","cache---subscribe");
+//                e.onNext(new ArrayList<User>());
+//                e.onComplete();
+//            }
+//        });
+//
+//
+//        final Observable<List<User> > netWork=  RetrofitClient
+//                .getApiService(ApiService.class)
+//                .getUserList();
+//
+//        Observable.concat(cache,netWork)
+//                .compose(Transformer.<List<User>>switchSchedulers(loading_dialog))
+//                .subscribe(new BaseObserver<List<User>>() {
+//                    @Override
+//                    public void onError(ApiException exception) {
+//                        responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                        loading_dialog.dismiss();
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(List<User> userList) {
+//                        String name="";
+//                        for ( User user:userList){
+//                            name=name+"   "+user.getNickName();
+//                        }
+//                        responseTv.setText(name);
+//                        loading_dialog.dismiss();
+//                    }
+//                });
+
+        RetrofitClient
+                .getApiService(ApiService.class)
+                .getUser()
+
+                .flatMap(new Function<User, ObservableSource<List<User>>>() {
+                    @Override
+                    public ObservableSource<List<User>> apply(@NonNull User user) throws Exception {
+                        return  RetrofitClient
+                                .getApiService(ApiService.class)
+                                .getUserList();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new BaseObserver<List<User>>() {
+                    @Override
+                    public void onError(ApiException exception) {
+                        Log.e("tag","error"+exception.getMessage());
+                    }
+
+                    @Override
+                    public void onSuccess(List<User> userList) {
+                        Log.e("tag","onSuccess");
+                    }
+                });
     }
 
     @Override
@@ -81,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
 //                RetrofitClient
-//                        .getApiService(ApiService.class)
+//                        .getApiService(ApiService.class,false)
 //                        .getUserResponse()
 //                        .compose(new DefaultTransformer<User>())
 //                        .subscribe(new BaseObserver<User>() {
@@ -97,8 +163,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                                loading_dialog.dismiss();
 //                            }
 //                        });
-               // 是用该方法 先将 CustomGoonResponseBodyConvector 中的
-               //return adapter.fromJson(response.getString("data")); 换成  return adapter.fromJson(result);
+
+                 // 或者data以外的数据
+//                RetrofitClient
+//                        .getApiService(ApiService.class,false)
+//                        .getUserResponse()
+//                        .compose(Transformer.<Response<User>>switchSchedulers(loading_dialog))
+//                        .subscribe(new BaseObserver<Response<User>>() {
+//                            @Override
+//                            public void onError(ApiException exception) {
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                                loading_dialog.dismiss();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(Response<User> userResponse) {
+//                                responseTv.setText(userResponse.getData().getNickName());
+//                                loading_dialog.dismiss();
+//                            }
+//                        });
                 break;
             case R.id.global_http:
                 RetrofitClient
