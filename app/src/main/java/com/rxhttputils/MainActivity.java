@@ -22,7 +22,9 @@ import com.rxjava.http.upload.UploadListener;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -242,8 +244,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(this,"文件不存在",Toast.LENGTH_SHORT).show();
                 }
                 upload_http.setEnabled(false);
+                Map<String, Object> map =new HashMap<String, Object>();
+                map.put("file",new File(file));
+                map.put("name","test");
                 RetrofitClient
-                        .uploadImg(uploadUrl, file, null,new UploadListener() {
+                        .uploadImg(uploadUrl,map,new UploadListener() {
                             @Override
                             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                                 upload_http.setText( progress+"%");

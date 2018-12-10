@@ -78,18 +78,19 @@ public class RetrofitClient {
         return  okHttpClient;
     }
 
-    public static Observable<ResponseBody> uploadImg(String uploadUrl, String filePath, Map<String, String> mapParam) {
-        return uploadImg(uploadUrl, filePath, mapParam, null);
+    public static Observable<ResponseBody> uploadImg(String uploadUrl,  Map<String, Object> mapParam) {
+        return uploadImg(uploadUrl,  mapParam, null);
     }
+
+
     // https://blog.csdn.net/huweijian5/article/details/52610093
     // https://blog.csdn.net/u012391876/article/details/52606817
-    public static Observable<ResponseBody> uploadImg(String uploadUrl, String filePath, Map<String,String> mapParam,UploadListener listener) {
+    public static Observable<ResponseBody> uploadImg(String uploadUrl, Map<String,Object> mapParam, UploadListener listener) {
 
-        File file = new File(filePath);
 
-        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
-        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
+//        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+//        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+//        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
 
 
 //        Map<String, RequestBody> map = new HashMap<>();
@@ -98,18 +99,25 @@ public class RetrofitClient {
 //        map.put("nickname",RequestBody.create(null,nickname));
 
 
-        MultipartBody.Builder builder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM);
+        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         if (null!=mapParam && mapParam.size()>0){
-            for (Map.Entry<String,String> entry : mapParam.entrySet()) {
-                builder.addFormDataPart(entry.getKey(), entry.getValue());
+            for (Map.Entry<String,Object> entry : mapParam.entrySet()) {
+                if (entry.getValue() instanceof File){
+                    if (((File)entry.getValue()).exists()){
+                        RequestBody imageBody = RequestBody.create(MediaType.parse("multipart/form-data"), ((File)entry.getValue()));
+                        builder.addFormDataPart(entry.getKey(), ((File)entry.getValue()).getName(), imageBody);
+                    }
+                }else {
+                    builder.addFormDataPart(entry.getKey(), entry.getValue().toString());
+                }
             }
         }
-        RequestBody imageBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        builder.addFormDataPart("file", file.getName(), imageBody);
+        if (null!=listener){
+            okhttpBuilder.addInterceptor(new UpLoadProgressInterceptor(listener));
+        }
         List<MultipartBody.Part> parts = builder.build().parts();
 
-        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
         boolean isShowLog= true;
         if (isShowLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
