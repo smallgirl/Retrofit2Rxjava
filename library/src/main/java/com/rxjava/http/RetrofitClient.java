@@ -1,19 +1,17 @@
 package com.rxjava.http;
 
 
-import android.text.TextUtils;
 import android.util.Log;
 
+import com.rxjava.http.download.DownloadRetrofit;
+import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
+import com.rxjava.http.transformer.Transformer;
 import com.rxjava.http.upload.UpLoadProgressInterceptor;
 import com.rxjava.http.upload.UploadFileApi;
 import com.rxjava.http.upload.UploadListener;
-import com.rxjava.http.download.DownloadRetrofit;
-import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
-import com.rxjava.http.interceptor.HeaderInterceptor;
-import com.rxjava.http.transformer.Transformer;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -28,27 +26,15 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.rxjava.http.RetofitConfig.BASE_URL;
+import static com.rxjava.http.RetofitConfig.DEFAULT_TIMEOUT;
+import static com.rxjava.http.RetofitConfig.READ_TIMEOUT;
+
 
 public class RetrofitClient {
 
-    private static final int DEFAULT_TIMEOUT = 20;
-
-    private static final int READ_TIMEOUT = 20;
-
-    private static final String BASE_URL = "http://service.jd100.com/cgi-bin/phone/";
-
     private static Retrofit retrofit;
     private static RetrofitClient instance;
-
-    private String baseUrl;
-
-    private Map<String, Object> headerMaps = new HashMap<>();
-
-    private boolean isShowLog = true;
-
-    private long readTimeout;
-    private long writeTimeout;
-    private long connectTimeout;
 
     /**
      * 通用的全局请求
@@ -58,23 +44,8 @@ public class RetrofitClient {
      */
     public static <K> K getApiService(Class<K> cls)  {
         if (retrofit == null) {
-            OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
-            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override
-                public void log(String message) {
-                    Log.e("RetrofitClient", message);
-                }
-            });
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            okhttpBuilder.addInterceptor(loggingInterceptor);
-            OkHttpClient okHttpClient = okhttpBuilder
-                    .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .writeTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                    .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                    .build();
             retrofit = new Retrofit.Builder()
-                    .client(okHttpClient)
+                    .client(getOkHttpClient(true))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     //.addConverterFactory(GsonConverterFactory.create())
                     .addConverterFactory(CustomGoonConvertFactory.create())
@@ -83,8 +54,11 @@ public class RetrofitClient {
         }
         return retrofit.create(cls);
     }
+    public static RetofitConfig newRetofit() {
+        return new RetofitConfig();
+    }
 
-    public  <K> K creatApiService(Class<K> cls)  {
+    private static OkHttpClient getOkHttpClient(boolean isShowLog) {
         OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
         if (isShowLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -97,78 +71,75 @@ public class RetrofitClient {
             okhttpBuilder.addInterceptor(loggingInterceptor);
         }
         OkHttpClient okHttpClient = okhttpBuilder
-                .addInterceptor(new HeaderInterceptor(headerMaps))
-                .readTimeout(readTimeout > 0 ? readTimeout : READ_TIMEOUT, TimeUnit.SECONDS)
-                .writeTimeout(writeTimeout > 0 ? writeTimeout : READ_TIMEOUT, TimeUnit.SECONDS)
-                .connectTimeout(connectTimeout > 0 ? connectTimeout : DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .connectTimeout( DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build();
-        Retrofit retrofit = new Retrofit.Builder()
-                .client(okHttpClient)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-//                .addConverterFactory(GsonConverterFactory.create())
-                .addConverterFactory(CustomGoonConvertFactory.create())
-                .baseUrl(TextUtils.isEmpty(baseUrl)?BASE_URL:baseUrl)
-                .build();
-        // 重置
-        readTimeout=0;
-        writeTimeout=0;
-        connectTimeout=0;
-        isShowLog=false;
-
-        return retrofit.create(cls);
+        return  okHttpClient;
     }
 
-    public static RetrofitClient getInstance() {
-        if (instance == null) {
-            synchronized (RetrofitClient.class) {
-                if (instance == null) {
-                    instance = new RetrofitClient();
-                }
-            }
-
-        }
-        return instance;
+    public static Observable<ResponseBody> uploadImg(String uploadUrl, String filePath, Map<String, String> mapParam) {
+        return uploadImg(uploadUrl, filePath, mapParam, null);
     }
-    public RetrofitClient baseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-        return this;
-    }
+    // https://blog.csdn.net/huweijian5/article/details/52610093
+    // https://blog.csdn.net/u012391876/article/details/52606817
+    public static Observable<ResponseBody> uploadImg(String uploadUrl, String filePath, Map<String,String> mapParam,UploadListener listener) {
 
-    public RetrofitClient addHeaders(Map<String, Object> headerMaps) {
-        this.headerMaps = headerMaps;
-        return this;
-    }
-
-    public RetrofitClient showLog(boolean isShowLog) {
-        this.isShowLog = isShowLog;
-        return this;
-    }
-
-
-    public static Observable<ResponseBody> uploadImg(String uploadUrl, String filePath, UploadListener listener) {
         File file = new File(filePath);
 
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-
         MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
-        UpLoadProgressInterceptor interceptor = new UpLoadProgressInterceptor(listener);
+        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
+
+//        Map<String, RequestBody> map = new HashMap<>();
+//        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), file);
+//        map.put("file\"; filename=\"" + file.getName() + " ", body);
+//        map.put("nickname",RequestBody.create(null,nickname));
+
+
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+        if (null!=mapParam && mapParam.size()>0){
+            for (Map.Entry<String,String> entry : mapParam.entrySet()) {
+                builder.addFormDataPart(entry.getKey(), entry.getValue());
+            }
+        }
+        RequestBody imageBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        builder.addFormDataPart("file", file.getName(), imageBody);
+        List<MultipartBody.Part> parts = builder.build().parts();
+
+        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+        boolean isShowLog= true;
+        if (isShowLog) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(String message) {
+                    Log.e("RetrofitClient", message);
+                }
+            });
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            okhttpBuilder.addInterceptor(loggingInterceptor);
+        }
+        if (null!=listener){
+            okhttpBuilder.addInterceptor(new UpLoadProgressInterceptor(listener));
+        }
+
+        OkHttpClient client = okhttpBuilder
                 .retryOnConnectionFailure(true)
                 .connectTimeout(1000, TimeUnit.SECONDS)
                 .writeTimeout(1000, TimeUnit.SECONDS)
                 .build();
-        String baseUrl = "https://api.github.com/";
+
         return new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
-                .baseUrl(baseUrl)
+                .baseUrl(BASE_URL)
                 .build()
                 .create(UploadFileApi.class)
-                .uploadImg(uploadUrl, body)
+               // .uploadImg(uploadUrl, body,no)
+                .uploadImg(uploadUrl, parts)
                 .compose(Transformer.<ResponseBody>switchSchedulers());
     }
     /**

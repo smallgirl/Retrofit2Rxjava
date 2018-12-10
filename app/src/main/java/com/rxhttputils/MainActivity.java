@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.single_http:
                 RetrofitClient
-                        .getInstance()
+                        .newRetofit()
                         .showLog(true)
                         .creatApiService(ApiService.class)
                         .getUser()
@@ -152,14 +152,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 download_http.setEnabled(false);
                 break;
             case R.id.upload_http:
-                String uploadUrl = "http://server.jeasonlzy.com/OkHttpUtils/upload";
+               // String uploadUrl = "http://server.jeasonlzy.com/OkHttpUtils/upload";
+                String uploadUrl = "http://api.vd.cn/info/getbonusnotice/";
                 String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"2.jpg";
                 if (!new File(file).exists()){
                     Toast.makeText(this,"文件不存在",Toast.LENGTH_SHORT).show();
                 }
                 upload_http.setEnabled(false);
                 RetrofitClient
-                        .uploadImg(uploadUrl, file, new UploadListener() {
+                        .uploadImg(uploadUrl, file, null,new UploadListener() {
                             @Override
                             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                                 upload_http.setText( progress+"%");

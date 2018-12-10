@@ -1,5 +1,7 @@
 package com.rxjava.http.upload;
 
+import java.util.List;
+
 import io.reactivex.Observable;
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
@@ -18,5 +20,10 @@ public interface UploadFileApi {
 
     @Multipart
     @POST
-    Observable<ResponseBody> uploadImg(@Url String uploadUrl, @Part MultipartBody.Part file);
+    Observable<ResponseBody> uploadImg(@Url String uploadUrl, @Part MultipartBody.Part file,@Part MultipartBody.Part  username );
+
+
+    @Multipart
+    @POST
+    Observable<ResponseBody> uploadImg(@Url String uploadUrl,@Part List<MultipartBody.Part> partList);
 }
