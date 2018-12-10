@@ -15,28 +15,31 @@ import retrofit2.Retrofit;
 
 
 public class CustomGoonConvertFactory extends Converter.Factory {
+
     /**
      * Create an instance using a default {@link Gson} instance for conversion. Encoding to JSON and
      * decoding from JSON (when no charset is specified by a header) will use UTF-8.
      */
-    public static CustomGoonConvertFactory create() {
-        return create(new Gson());
+    public static CustomGoonConvertFactory create(boolean fromData) {
+        return create(new Gson(),fromData);
     }
 
     /**
      * Create an instance using {@code gson} for conversion. Encoding to JSON and
      * decoding from JSON (when no charset is specified by a header) will use UTF-8.
      */
-    public static CustomGoonConvertFactory create(Gson gson) {
-        return new CustomGoonConvertFactory(gson);
+    public static CustomGoonConvertFactory create(Gson gson,boolean fromData) {
+        return new CustomGoonConvertFactory(gson,fromData);
     }
 
     private final Gson gson;
+    private boolean fromData;
 
 
-    private CustomGoonConvertFactory(Gson gson) {
+    private CustomGoonConvertFactory(Gson gson,boolean fromData) {
         if (gson == null) throw new NullPointerException("gson == null");
         this.gson = gson;
+        this.fromData=fromData;
     }
 
     @Override
@@ -50,7 +53,7 @@ public class CustomGoonConvertFactory extends Converter.Factory {
             };
         }
         final TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
-        return new CustomGoonResponseBodyConvector<>(adapter);
+        return new CustomGoonResponseBodyConvector<>(adapter, fromData);
     }
 
     @Override

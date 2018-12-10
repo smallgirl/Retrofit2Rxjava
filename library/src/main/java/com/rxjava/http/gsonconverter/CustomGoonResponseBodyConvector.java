@@ -18,9 +18,11 @@ import retrofit2.Converter;
 
 public class CustomGoonResponseBodyConvector<T> implements Converter<ResponseBody, T> {
     private final TypeAdapter<T> adapter;
+    private boolean fromData;
 
-    CustomGoonResponseBodyConvector(TypeAdapter<T> adapter) {
+    CustomGoonResponseBodyConvector(TypeAdapter<T> adapter,boolean fromData) {
         this.adapter = adapter;
+        this.fromData = fromData;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class CustomGoonResponseBodyConvector<T> implements Converter<ResponseBod
             int code = response.optInt("code");
             if (ErrorType.SUCCESS==code) {
                // return adapter.fromJson(result);
-                return adapter.fromJson(response.getString("data"));//解析data数据
+                return adapter.fromJson(fromData?response.getString("data"):result);//解析data数据
             }else {
                 String message = response.optString("msg", "");
                 throw new ServerException(code, message);
