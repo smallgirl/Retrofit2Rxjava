@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 map.put("file",new File(file));
                 map.put("name","test");
                 RetrofitClient
-                        .uploadImg(uploadUrl,map,new UploadListener() {
+                        .creatUploadService(ApiService.class, new UploadListener() {
                             @Override
                             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                                 upload_http.setText( progress+"%");
@@ -258,6 +258,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 }
                             }
                         })
+                        .uploadFile(uploadUrl,RetrofitClient.getUploadParam(map))
+                        .compose(Transformer.<ResponseBody>switchSchedulers())
                         .doFinally(new Action() {
                             @Override
                             public void run() throws Exception {

@@ -85,7 +85,7 @@ public interface ApiService {
 }
 
 RetrofitClient
-        .getInstance()
+        .newRetofit()
         .showLog(true)
         .creatApiService(ApiService.class)
         .getUser()
@@ -93,7 +93,7 @@ RetrofitClient
         .subscribe(new BaseObserver<User>() {
             @Override
             public void onError(ApiException exception) {
-                responseTv.setText("onError"+exception.message+exception.code);
+                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
                 loading_dialog.dismiss();
             }
 
@@ -115,20 +115,19 @@ public class DefaultTransformer<T> implements ObservableTransformer<Response<T>,
     @Override
     public ObservableSource<T> apply(@NonNull Observable<Response<T>> upstream) {
 
-        return   upstream
+        return upstream
                 .subscribeOn(Schedulers.io())
-                .unsubscribeOn(Schedulers.io())
                 .map(new Function<Response<T>, T>() {
                     @Override
                     public T apply(@NonNull Response<T> response) throws Exception {
                         return response.getData();
                     }
                 })
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
 }
+
 RetrofitClient
     .getApiService(ApiService.class)
     .getUserResponse()
@@ -151,16 +150,25 @@ RetrofitClient
 ## 2、添加 上传/下载 文件 进度回调
 上传代码
 ```java
-String uploadUrl = "http://server.jeasonlzy.com/OkHttpUtils/upload";
+String uploadUrl = "http://api.vd.cn/info/getbonusnotice/";
 String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"2.jpg";
 upload_http.setEnabled(false);
+Map<String, Object> map =new HashMap<String, Object>();
+map.put("file",new File(file));
+map.put("name","test");
 RetrofitClient
-        .uploadImg(uploadUrl, file, new UploadListener() {
+        .creatUploadService(ApiService.class, new UploadListener() {
             @Override
             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                 upload_http.setText( progress+"%");
+                if (bytesWritten==contentLength){
+                    upload_http.setText( "上传完毕");
+                    Log.e("tag","上传完毕");
+                }
             }
         })
+        .uploadFile(uploadUrl,RetrofitClient.getUploadParam(map))
+        .compose(Transformer.<ResponseBody>switchSchedulers())
         .doFinally(new Action() {
             @Override
             public void run() throws Exception {
@@ -175,9 +183,10 @@ RetrofitClient
         }, new Consumer<Throwable>() {
             @Override
             public void accept(@NonNull Throwable throwable) throws Exception {
-                upload_http.setText( "上传失败");
+                upload_http.setText( "上传失败"+throwable);
             }
         });
+
 ```
 下载代码
 

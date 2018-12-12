@@ -21,16 +21,14 @@ public class DefaultTransformer<T> implements ObservableTransformer<Response<T>,
     @Override
     public ObservableSource<T> apply(@NonNull Observable<Response<T>> upstream) {
 
-        return   upstream
+        return upstream
                 .subscribeOn(Schedulers.io())
-                .unsubscribeOn(Schedulers.io())
                 .map(new Function<Response<T>, T>() {
                     @Override
                     public T apply(@NonNull Response<T> response) throws Exception {
                         return response.getData();
                     }
                 })
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 

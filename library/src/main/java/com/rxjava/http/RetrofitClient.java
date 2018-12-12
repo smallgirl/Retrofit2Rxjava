@@ -5,9 +5,7 @@ import android.util.Log;
 
 import com.rxjava.http.download.DownloadRetrofit;
 import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
-import com.rxjava.http.transformer.Transformer;
 import com.rxjava.http.upload.UpLoadProgressInterceptor;
-import com.rxjava.http.upload.UploadFileApi;
 import com.rxjava.http.upload.UploadListener;
 
 import java.io.File;
@@ -78,28 +76,10 @@ public class RetrofitClient {
         return  okHttpClient;
     }
 
-    public static Observable<ResponseBody> uploadImg(String uploadUrl,  Map<String, Object> mapParam) {
-        return uploadImg(uploadUrl,  mapParam, null);
-    }
-
-
     // https://blog.csdn.net/huweijian5/article/details/52610093
     // https://blog.csdn.net/u012391876/article/details/52606817
-    public static Observable<ResponseBody> uploadImg(String uploadUrl, Map<String,Object> mapParam, UploadListener listener) {
 
-
-//        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-//        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
-//        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
-
-
-//        Map<String, RequestBody> map = new HashMap<>();
-//        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), file);
-//        map.put("file\"; filename=\"" + file.getName() + " ", body);
-//        map.put("nickname",RequestBody.create(null,nickname));
-
-
-        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+    public static List<MultipartBody.Part> getUploadParam(Map<String,Object> mapParam){
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         if (null!=mapParam && mapParam.size()>0){
             for (Map.Entry<String,Object> entry : mapParam.entrySet()) {
@@ -113,11 +93,12 @@ public class RetrofitClient {
                 }
             }
         }
-        if (null!=listener){
-            okhttpBuilder.addInterceptor(new UpLoadProgressInterceptor(listener));
-        }
         List<MultipartBody.Part> parts = builder.build().parts();
+        return  parts;
+    }
+    public static <K> K creatUploadService(Class<K> cls,UploadListener listener) {
 
+        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
         boolean isShowLog= true;
         if (isShowLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -133,6 +114,16 @@ public class RetrofitClient {
             okhttpBuilder.addInterceptor(new UpLoadProgressInterceptor(listener));
         }
 
+//        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+//        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+//        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
+
+
+//        Map<String, RequestBody> map = new HashMap<>();
+//        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), file);
+//        map.put("file\"; filename=\"" + file.getName() + " ", body);
+//        map.put("nickname",RequestBody.create(null,nickname));
+
         OkHttpClient client = okhttpBuilder
                 .retryOnConnectionFailure(true)
                 .connectTimeout(1000, TimeUnit.SECONDS)
@@ -145,10 +136,7 @@ public class RetrofitClient {
                 .client(client)
                 .baseUrl(BASE_URL)
                 .build()
-                .create(UploadFileApi.class)
-               // .uploadImg(uploadUrl, body,no)
-                .uploadImg(uploadUrl, parts)
-                .compose(Transformer.<ResponseBody>switchSchedulers());
+                .create(cls);
     }
     /**
      * 下载文件

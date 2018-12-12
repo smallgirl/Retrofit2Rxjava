@@ -22,6 +22,7 @@ public class Transformer {
 
     /**
      * 带参数  显示loading对话框
+     *
      * @param <T> 泛型
      * @return 返回Observable
      */
@@ -34,9 +35,9 @@ public class Transformer {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-               return upstream.subscribeOn(Schedulers.io())
+                return upstream.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                       .doOnSubscribe(new Consumer<Disposable>() {
+                        .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(@NonNull Disposable disposable) throws Exception {
                                 if (dialog != null) {
