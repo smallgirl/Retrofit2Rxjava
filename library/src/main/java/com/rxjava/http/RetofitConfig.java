@@ -29,7 +29,6 @@ public class RetofitConfig {
 
     public static final int READ_TIMEOUT = 20;
 
-    public static final String BASE_URL = "http://service.jd100.com/cgi-bin/phone/";
 
     private Map<String, Object> headerMaps;
 
@@ -93,7 +92,7 @@ public class RetofitConfig {
                 .client(okHttpClient)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(null != factory ? factory : GsonConverterFactory.create())
-                .baseUrl(TextUtils.isEmpty(baseUrl)?BASE_URL:baseUrl)
+                .baseUrl(TextUtils.isEmpty(baseUrl)?RetrofitClient.baseUrl:baseUrl)
                 .build();
 
         return retrofit.create(cls);

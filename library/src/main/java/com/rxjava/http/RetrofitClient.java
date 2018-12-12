@@ -24,7 +24,6 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.rxjava.http.RetofitConfig.BASE_URL;
 import static com.rxjava.http.RetofitConfig.DEFAULT_TIMEOUT;
 import static com.rxjava.http.RetofitConfig.READ_TIMEOUT;
 
@@ -32,7 +31,16 @@ import static com.rxjava.http.RetofitConfig.READ_TIMEOUT;
 public class RetrofitClient {
 
     private static Retrofit retrofit;
-    private static RetrofitClient instance;
+    private static boolean showLog;
+    protected static String baseUrl = "http://service.jd100.com/cgi-bin/phone/";
+
+    public static void setShowLog(boolean showLog) {
+        RetrofitClient.showLog = showLog;
+    }
+
+    public static void setBaseUrl(String baseUrl) {
+        RetrofitClient.baseUrl = baseUrl;
+    }
 
     /**
      * 通用的全局请求
@@ -43,11 +51,11 @@ public class RetrofitClient {
     public static <K> K getApiService(Class<K> cls)  {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .client(getOkHttpClient(true))
+                    .client(getOkHttpClient(showLog))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     //.addConverterFactory(GsonConverterFactory.create())
                     .addConverterFactory(CustomGoonConvertFactory.create(true))
-                    .baseUrl(BASE_URL)
+                    .baseUrl(baseUrl)
                     .build();
         }
         return retrofit.create(cls);
@@ -99,8 +107,7 @@ public class RetrofitClient {
     public static <K> K creatUploadService(Class<K> cls,UploadListener listener) {
 
         OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
-        boolean isShowLog= true;
-        if (isShowLog) {
+        if (showLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                 @Override
                 public void log(String message) {
@@ -134,7 +141,7 @@ public class RetrofitClient {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
-                .baseUrl(BASE_URL)
+                .baseUrl(baseUrl)
                 .build()
                 .create(cls);
     }
