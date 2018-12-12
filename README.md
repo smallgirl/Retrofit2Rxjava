@@ -106,7 +106,7 @@ RetrofitClient
 
 ```
 我们的User 就是data 里面的数据，完全不用在建立一个Response类包裹着User
-### 方案2 同过操作符 对对象进行转换
+### 方案2 通过操作符 对对象进行转换
 
 ```java
 public class DefaultTransformer<T> implements ObservableTransformer<Response<T>, T> {
