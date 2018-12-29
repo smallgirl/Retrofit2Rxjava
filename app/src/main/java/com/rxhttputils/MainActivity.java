@@ -1,6 +1,7 @@
 package com.rxhttputils;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +17,7 @@ import com.rxhttputils.bean.User;
 import com.rxjava.http.RetrofitClient;
 import com.rxjava.http.download.DownloadObserver;
 import com.rxjava.http.exception.ApiException;
+import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
 import com.rxjava.http.observer.BaseObserver;
 import com.rxjava.http.transformer.Transformer;
 import com.rxjava.http.upload.UploadListener;
@@ -39,7 +41,7 @@ import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button  single_http, global_http,  download_http, upload_http;
+    private Button  single_http, global_http,  download_http, upload_http,rxjava;
     private Dialog loading_dialog;
     private TextView responseTv;
 
@@ -52,7 +54,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         responseTv = (TextView) findViewById(R.id.response_tv);
         single_http = (Button) findViewById(R.id.single_http);
+        rxjava = (Button) findViewById(R.id.rxjava);
         single_http.setOnClickListener(this);
+        rxjava.setOnClickListener(this);
         global_http = (Button) findViewById(R.id.global_http);
         global_http.setOnClickListener(this);
         download_http = (Button) findViewById(R.id.download_http);
@@ -99,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RetrofitClient
                 .getApiService(ApiService.class)
                 .getUser()
-
                 .flatMap(new Function<User, ObservableSource<List<User>>>() {
                     @Override
                     public ObservableSource<List<User>> apply(@NonNull User user) throws Exception {
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 RetrofitClient
                         .newRetofit()
                         .showLog(true)
+                        .factory(CustomGoonConvertFactory.create(true))
                         .creatApiService(ApiService.class)
                         .getUser()
                         .compose(Transformer.<User>switchSchedulers(loading_dialog))
@@ -144,46 +148,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             @Override
                             public void onSuccess(User user) {
+                                Log.e("tag","onSuccess"+user.getNickName());
                                 responseTv.setText(user.getNickName());
                                 loading_dialog.dismiss();
                             }
                         });
-//                RetrofitClient
-//                        .getApiService(ApiService.class,false)
-//                        .getUserResponse()
-//                        .compose(new DefaultTransformer<User>())
-//                        .subscribe(new BaseObserver<User>() {
-//                            @Override
-//                            public void onError(ApiException exception) {
-//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
-//                                loading_dialog.dismiss();
-//                            }
-//
-//                            @Override
-//                            public void onSuccess(User user) {
-//                                responseTv.setText(user.getNickName());
-//                                loading_dialog.dismiss();
-//                            }
-//                        });
-
-                 // 或者data以外的数据
-//                RetrofitClient
-//                        .getApiService(ApiService.class,false)
-//                        .getUserResponse()
-//                        .compose(Transformer.<Response<User>>switchSchedulers(loading_dialog))
-//                        .subscribe(new BaseObserver<Response<User>>() {
-//                            @Override
-//                            public void onError(ApiException exception) {
-//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
-//                                loading_dialog.dismiss();
-//                            }
-//
-//                            @Override
-//                            public void onSuccess(Response<User> userResponse) {
-//                                responseTv.setText(userResponse.getData().getNickName());
-//                                loading_dialog.dismiss();
-//                            }
-//                        });
                 break;
             case R.id.global_http:
                 RetrofitClient
@@ -237,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 download_http.setEnabled(false);
                 break;
             case R.id.upload_http:
-               // String uploadUrl = "http://server.jeasonlzy.com/OkHttpUtils/upload";
                 String uploadUrl = "http://api.vd.cn/info/getbonusnotice/";
                 String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"2.jpg";
                 if (!new File(file).exists()){
@@ -278,6 +246,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
 
+
+                break;
+            case R.id.rxjava:
+                startActivity(new Intent(this,RxjavaActivity.class));
                 break;
         }
     }

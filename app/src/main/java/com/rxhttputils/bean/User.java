@@ -26,7 +26,17 @@ public class User {
         return sex;
     }
 
+
     public void setSex(int sex) {
         this.sex = sex;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "nickName='" + nickName + '\'' +
+                ", sex=" + sex +
+                '}';
+    }
+
 }
