@@ -1,6 +1,8 @@
 package com.rxjava.http.download;
 
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,10 +44,18 @@ public class DownloadManager {
             while ((len = is.read(buf)) != -1) {
                 sum += len;
                 fos.write(buf, 0, len);
+                Log.e("tag","contentLength----"+contentLength);
 
                 final long finalSum = sum;
-
-                progressListener.onResponseProgress(finalSum, contentLength, (int) ((finalSum * 1.0f / contentLength)*100), finalSum == contentLength, file.getAbsolutePath());
+                if(contentLength<=1){
+                    progressListener.onResponseProgress(1, 2, 50, false, file.getAbsolutePath());
+                }else {
+                    progressListener.onResponseProgress(finalSum, contentLength, (int) ((finalSum * 1.0f / contentLength)*100), finalSum == contentLength, file.getAbsolutePath());
+                }
+            }
+            if(contentLength<=1){
+                Log.e("tag","contentLength----alll");
+                progressListener.onResponseProgress(1, 1, 100, true, file.getAbsolutePath());
             }
             fos.flush();
 

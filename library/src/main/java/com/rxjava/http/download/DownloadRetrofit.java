@@ -1,9 +1,14 @@
 package com.rxjava.http.download;
 
 
+import com.rxjava.http.interceptor.HeaderInterceptor;
 import com.rxjava.http.transformer.Transformer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.reactivex.Observable;
+import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -23,9 +28,14 @@ public class DownloadRetrofit {
 
 
     public DownloadRetrofit() {
+        Map<String, Object> headerMaps = new HashMap<>();
+        headerMaps.put("Accept-Encoding", "identity");// 服务器文件进度
+        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+        okhttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
         mRetrofit = new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okhttpBuilder.build())
                 .baseUrl(baseUrl)
                 .build();
     }
