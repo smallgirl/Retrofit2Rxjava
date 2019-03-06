@@ -1,5 +1,7 @@
 package com.rxjava.http.gsonconverter;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
@@ -52,8 +54,9 @@ public class CustomGoonConvertFactory extends Converter.Factory {
                 }
             };
         }
+        Log.e("tag",type.toString());
         final TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
-        return new CustomGoonResponseBodyConvector<>(adapter, fromData);
+        return new CustomGoonResponseBodyConvector<>(adapter, type,fromData);
     }
 
     @Override

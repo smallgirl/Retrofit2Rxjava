@@ -2,6 +2,7 @@ package com.rxhttputils.api;
 
 
 import com.rxhttputils.bean.User;
+import com.rxjava.http.gsonconverter.DataNull;
 import com.rxjava.http.transformer.Response;
 
 import java.util.List;
@@ -25,6 +26,8 @@ public interface ApiService {
 
     @GET("http://zzuli.gitee.io/api/user.html")
     Observable <User> getUser();
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <DataNull> getUser1();
 
     @GET("http://zzuli.gitee.io/api/user.html")
     Observable <Response<User>> getUserResponse();

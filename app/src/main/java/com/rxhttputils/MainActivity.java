@@ -18,6 +18,7 @@ import com.rxjava.http.RetrofitClient;
 import com.rxjava.http.download.DownloadObserver;
 import com.rxjava.http.exception.ApiException;
 import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
+import com.rxjava.http.gsonconverter.DataNull;
 import com.rxjava.http.observer.BaseObserver;
 import com.rxjava.http.transformer.Transformer;
 import com.rxjava.http.upload.UploadListener;
@@ -28,14 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.ObservableSource;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
 
@@ -100,30 +97,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                    }
 //                });
 
-        RetrofitClient
-                .getApiService(ApiService.class)
-                .getUser()
-                .flatMap(new Function<User, ObservableSource<List<User>>>() {
-                    @Override
-                    public ObservableSource<List<User>> apply(@NonNull User user) throws Exception {
-                        return  RetrofitClient
-                                .getApiService(ApiService.class)
-                                .getUserList();
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new BaseObserver<List<User>>() {
-                    @Override
-                    public void onError(ApiException exception) {
-                        Log.e("tag","error"+exception.getMessage());
-                    }
-
-                    @Override
-                    public void onSuccess(List<User> userList) {
-                        Log.e("tag","onSuccess");
-                    }
-                });
+//        RetrofitClient
+//                .getApiService(ApiService.class)
+//                .getUser()
+//                .flatMap(new Function<User, ObservableSource<List<User>>>() {
+//                    @Override
+//                    public ObservableSource<List<User>> apply(@NonNull User user) throws Exception {
+//                        return  RetrofitClient
+//                                .getApiService(ApiService.class)
+//                                .getUserList();
+//                    }
+//                })
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new BaseObserver<List<User>>() {
+//                    @Override
+//                    public void onError(ApiException exception) {
+//                        Log.e("tag","error"+exception.getMessage());
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(List<User> userList) {
+//                        Log.e("tag","onSuccess");
+//                    }
+//                });
     }
 
     @Override
@@ -132,14 +129,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.single_http:
+//                RetrofitClient
+//                        .newRetofit()
+//                        .showLog(true)
+//                        .factory(CustomGoonConvertFactory.create(true))
+//                        .creatApiService(ApiService.class)
+//                        .getUser()
+//                        .compose(Transformer.<User>switchSchedulers(loading_dialog))
+//                        .subscribe(new BaseObserver<User>() {
+//                            @Override
+//                            public void onError(ApiException exception) {
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                                loading_dialog.dismiss();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(User user) {
+//                                Log.e("tag","onSuccess"+user.getNickName());
+//                                responseTv.setText(user.getNickName());
+//                                loading_dialog.dismiss();
+//                            }
+//                        });
                 RetrofitClient
                         .newRetofit()
                         .showLog(true)
                         .factory(CustomGoonConvertFactory.create(true))
                         .creatApiService(ApiService.class)
-                        .getUser()
-                        .compose(Transformer.<User>switchSchedulers(loading_dialog))
-                        .subscribe(new BaseObserver<User>() {
+                        .getUser1()
+                        .compose(Transformer.<DataNull>switchSchedulers(loading_dialog))
+                        .subscribe(new BaseObserver<DataNull>() {
                             @Override
                             public void onError(ApiException exception) {
                                 responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
@@ -147,9 +165,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
 
                             @Override
-                            public void onSuccess(User user) {
-                                Log.e("tag","onSuccess"+user.getNickName());
-                                responseTv.setText(user.getNickName());
+                            public void onSuccess(DataNull user) {
+                                responseTv.setText("成功");
                                 loading_dialog.dismiss();
                             }
                         });
@@ -158,6 +175,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 RetrofitClient
                         .getApiService(ApiService.class)
                         .getUserList()
+                        .doOnNext(new Consumer<List<User>>() {
+                            @Override
+                            public void accept(List<User> users) throws Exception {
+                                Log.e("tag",Thread.currentThread().getName());
+                            }
+                        })
                         .compose(Transformer.<List<User>>switchSchedulers(loading_dialog))
                         .subscribe(new BaseObserver<List<User>>() {
                             @Override
@@ -180,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.download_http:
                 String url = "https://t.alipayobjects.com/L1/71/100/and/alipay_wap_main.apk";
+                 url = "https://zzuli.gitee.io/api/kanglong.apk";
                 final String fileName = "alipay.apk";
                 String fileDir = getExternalFilesDir(null) + File.separator;
                 RetrofitClient

@@ -17,6 +17,7 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -70,35 +71,42 @@ public class CombinationFragment extends BaseFragment {
                         Observable.create(new ObservableOnSubscribe<Integer>() {
                             @Override
                             public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-
-                                emitter.onNext(1);
-                                emitter.onNext(2);
-                                emitter.onNext(3);
-                                emitter.onError(new NullPointerException()); // 发送Error事件，因为无使用concatDelayError，所以第2个Observable将不会发送事件
-                                emitter.onComplete();
+                                emitter.onError(new NullPointerException());
+//                                emitter.onNext(1);
+//                                emitter.onNext(2);
+//                                emitter.onNext(3);
+//                              //  emitter.onError(new NullPointerException()); // 发送Error事件，因为无使用concatDelayError，所以第2个Observable将不会发送事件
+//                                emitter.onComplete();
                             }
                         }),
                         Observable.just(4, 5, 6))
-                        .subscribe(new Observer<Integer>() {
+                        .first(0)
+                        .subscribe(new Consumer<Integer>() {
                             @Override
-                            public void onSubscribe(Disposable d) {
-
-                            }
-                            @Override
-                            public void onNext(Integer value) {
-                                Log.e("tag", "onNext"+ value  );
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                Log.e("tag"," onError");
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                Log.e("tag","onComplete");
+                            public void accept(Integer integer) throws Exception {
+                                Log.e("tag", "onNext"+integer);
                             }
                         });
+//                        .subscribe(new Observer<Integer>() {
+//                            @Override
+//                            public void onSubscribe(Disposable d) {
+//
+//                            }
+//                            @Override
+//                            public void onNext(Integer value) {
+//                                Log.e("tag", "onNext"+ value  );
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable e) {
+//                                Log.e("tag"," onError");
+//                            }
+//
+//                            @Override
+//                            public void onComplete() {
+//                                Log.e("tag","onComplete");
+//                            }
+//                        });
                 break;
             //zip操作符，会将多个Observable对象转换成一个Observable对象然后进行发送，转换关系可根据需求自定义
             case R.id.btn_zip:
