@@ -30,6 +30,12 @@ public interface ApiService {
     Observable <DataNull> getUser1();
 
     @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <ResponseBody> getUser2();
+
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable <String> getUser3();
+
+    @GET("http://zzuli.gitee.io/api/user.html")
     Observable <Response<User>> getUserResponse();
 
     @GET("http://zzuli.gitee.io/api/userlist.html")

@@ -18,7 +18,6 @@ import com.rxjava.http.RetrofitClient;
 import com.rxjava.http.download.DownloadObserver;
 import com.rxjava.http.exception.ApiException;
 import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
-import com.rxjava.http.gsonconverter.DataNull;
 import com.rxjava.http.observer.BaseObserver;
 import com.rxjava.http.transformer.Transformer;
 import com.rxjava.http.upload.UploadListener;
@@ -150,14 +149,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                                loading_dialog.dismiss();
 //                            }
 //                        });
+//                RetrofitClient
+//                        .newRetofit()
+//                        .showLog(true)
+//                        .factory(CustomGoonConvertFactory.create(true))
+//                        .creatApiService(ApiService.class)
+//                        .getUser1()
+//                        .compose(Transformer.<DataNull>switchSchedulers(loading_dialog))
+//                        .subscribe(new BaseObserver<DataNull>() {
+//                            @Override
+//                            public void onError(ApiException exception) {
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                                loading_dialog.dismiss();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(DataNull user) {
+//                                responseTv.setText("成功");
+//                                loading_dialog.dismiss();
+//                            }
+//                        });
+//                RetrofitClient
+//                        .newRetofit()
+//                        .showLog(true)
+//                        .factory(CustomGoonConvertFactory.create(true))
+//                        .creatApiService(ApiService.class)
+//                        .getUser2()
+//                        .compose(Transformer.<ResponseBody>switchSchedulers(loading_dialog))
+//                        .subscribe(new BaseObserver<ResponseBody>() {
+//                            @Override
+//                            public void onError(ApiException exception) {
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                                loading_dialog.dismiss();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(ResponseBody user) {
+//                                responseTv.setText("成功");
+//                                loading_dialog.dismiss();
+//                            }
+//                        });
                 RetrofitClient
                         .newRetofit()
                         .showLog(true)
-                        .factory(CustomGoonConvertFactory.create(true))
+                        .factory(CustomGoonConvertFactory.create(false))
                         .creatApiService(ApiService.class)
-                        .getUser1()
-                        .compose(Transformer.<DataNull>switchSchedulers(loading_dialog))
-                        .subscribe(new BaseObserver<DataNull>() {
+                        .getUser3()
+                        .compose(Transformer.<String>switchSchedulers(loading_dialog))
+                        .subscribe(new BaseObserver<String>() {
                             @Override
                             public void onError(ApiException exception) {
                                 responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
@@ -165,8 +204,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
 
                             @Override
-                            public void onSuccess(DataNull user) {
-                                responseTv.setText("成功");
+                            public void onSuccess(String user) {
+                                responseTv.setText(user);
                                 loading_dialog.dismiss();
                             }
                         });

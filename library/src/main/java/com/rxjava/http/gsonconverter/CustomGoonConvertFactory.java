@@ -1,7 +1,5 @@
 package com.rxjava.http.gsonconverter;
 
-import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
@@ -45,16 +43,15 @@ public class CustomGoonConvertFactory extends Converter.Factory {
     }
 
     @Override
-    public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
+    public Converter<ResponseBody, ?> responseBodyConverter(final Type type, Annotation[] annotations, Retrofit retrofit) {
         if (String.class.equals(type)) {
             return new Converter<ResponseBody, String>() {
                 @Override
                 public String convert(ResponseBody value) throws IOException {
-                    return value.string();
+                    return ConvertUtil.convert(value.string(),fromData,type);
                 }
             };
         }
-        Log.e("tag",type.toString());
         final TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
         return new CustomGoonResponseBodyConvector<>(adapter, type,fromData);
     }
