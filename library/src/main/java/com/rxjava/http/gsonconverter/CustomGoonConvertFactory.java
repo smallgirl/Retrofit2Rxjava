@@ -21,25 +21,25 @@ public class CustomGoonConvertFactory extends Converter.Factory {
      * decoding from JSON (when no charset is specified by a header) will use UTF-8.
      */
     public static CustomGoonConvertFactory create(boolean fromData) {
-        return create(new Gson(),fromData);
+        return create(new Gson(), fromData);
     }
 
     /**
      * Create an instance using {@code gson} for conversion. Encoding to JSON and
      * decoding from JSON (when no charset is specified by a header) will use UTF-8.
      */
-    public static CustomGoonConvertFactory create(Gson gson,boolean fromData) {
-        return new CustomGoonConvertFactory(gson,fromData);
+    public static CustomGoonConvertFactory create(Gson gson, boolean fromData) {
+        return new CustomGoonConvertFactory(gson, fromData);
     }
 
     private final Gson gson;
     private boolean fromData;
 
 
-    private CustomGoonConvertFactory(Gson gson,boolean fromData) {
+    private CustomGoonConvertFactory(Gson gson, boolean fromData) {
         if (gson == null) throw new NullPointerException("gson == null");
         this.gson = gson;
-        this.fromData=fromData;
+        this.fromData = fromData;
     }
 
     @Override
@@ -48,12 +48,12 @@ public class CustomGoonConvertFactory extends Converter.Factory {
             return new Converter<ResponseBody, String>() {
                 @Override
                 public String convert(ResponseBody value) throws IOException {
-                    return ConvertUtil.convert(value.string(),fromData,type);
+                    return ConvertUtil.convert(value.string(), fromData, type);
                 }
             };
         }
         final TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(type));
-        return new CustomGoonResponseBodyConvector<>(adapter, type,fromData);
+        return new CustomGoonResponseBodyConvector<>(adapter, type, fromData);
     }
 
     @Override
