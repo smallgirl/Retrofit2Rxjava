@@ -15,7 +15,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RetofitConfig {
+public class RetrofitConfig {
 
     private boolean showLog;
     private int readTimeout;
@@ -32,37 +32,37 @@ public class RetofitConfig {
 
     private Map<String, Object> headerMaps;
 
-    public RetofitConfig showLog(boolean showLog) {
+    public RetrofitConfig showLog(boolean showLog) {
         this.showLog = showLog;
         return this;
     }
 
-    public RetofitConfig readTimeout(int readTimeout) {
+    public RetrofitConfig readTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
         return this;
     }
 
-    public RetofitConfig connectTimeout(int connectTimeout) {
+    public RetrofitConfig connectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
         return this;
     }
 
-    public RetofitConfig writeTimeout(int writeTimeout) {
+    public RetrofitConfig writeTimeout(int writeTimeout) {
         this.writeTimeout = writeTimeout;
         return this;
     }
 
-    public RetofitConfig baseUrl(String baseUrl) {
+    public RetrofitConfig baseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
     }
 
-    public RetofitConfig factory(Converter.Factory factory) {
+    public RetrofitConfig factory(Converter.Factory factory) {
         this.factory = factory;
         return this;
     }
 
-    public RetofitConfig headerMaps(Map<String, Object> headerMaps) {
+    public RetrofitConfig headerMaps(Map<String, Object> headerMaps) {
         this.headerMaps = headerMaps;
         return this;
     }

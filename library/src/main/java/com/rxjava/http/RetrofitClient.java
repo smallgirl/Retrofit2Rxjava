@@ -24,8 +24,8 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.rxjava.http.RetofitConfig.DEFAULT_TIMEOUT;
-import static com.rxjava.http.RetofitConfig.READ_TIMEOUT;
+import static com.rxjava.http.RetrofitConfig.DEFAULT_TIMEOUT;
+import static com.rxjava.http.RetrofitConfig.READ_TIMEOUT;
 
 
 public class RetrofitClient {
@@ -60,8 +60,8 @@ public class RetrofitClient {
         }
         return retrofit.create(cls);
     }
-    public static RetofitConfig newRetofit() {
-        return new RetofitConfig();
+    public static RetrofitConfig newRetofit() {
+        return new RetrofitConfig();
     }
 
     private static OkHttpClient getOkHttpClient(boolean isShowLog) {
