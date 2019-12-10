@@ -16,6 +16,7 @@ public interface ProgressListener {
      * @param done          是否下载完成
      */
     void onResponseProgress(long bytesRead, long contentLength, int progress, boolean done, String filePath);
+    void onError(Exception e);
 
 
 }

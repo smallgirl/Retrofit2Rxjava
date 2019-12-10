@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String url = "https://t.alipayobjects.com/L1/71/100/and/alipay_wap_main.apk";
                  url = "https://zzuli.gitee.io/api/kanglong.apk";
                 final String fileName = "alipay.apk";
-                String fileDir = getExternalFilesDir(null) + File.separator;
+                String fileDir = Environment.getExternalStorageDirectory() + File.separator;
                 RetrofitClient
                         .downloadFile(url)
                         .subscribe(new DownloadObserver(fileDir,fileName) {

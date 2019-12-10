@@ -1,7 +1,7 @@
 package com.rxjava.http.download;
 
 
-import com.rxjava.http.interceptor.HeaderInterceptor;
+import com.rxjava.http.RetrofitConfig;
 import com.rxjava.http.transformer.Transformer;
 
 import java.util.HashMap;
@@ -30,12 +30,15 @@ public class DownloadRetrofit {
     public DownloadRetrofit() {
         Map<String, Object> headerMaps = new HashMap<>();
         headerMaps.put("Accept-Encoding", "identity");// 服务器文件进度
-        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
-        okhttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
+        OkHttpClient okHttpClient = new RetrofitConfig()
+                .headerMaps(headerMaps)
+                .connectTimeout(1000)
+                .writeTimeout(1000)
+                .getOkHttpClient();
         mRetrofit = new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
-                .client(okhttpBuilder.build())
+                .client(okHttpClient)
                 .baseUrl(baseUrl)
                 .build();
     }
