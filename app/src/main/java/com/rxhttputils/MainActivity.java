@@ -241,8 +241,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.download_http:
-                String url = "https://t.alipayobjects.com/L1/71/100/and/alipay_wap_main.apk";
-                 url = "https://zzuli.gitee.io/api/kanglong.apk";
+                String url = "https://zzuli.gitee.io/api/kanglong.apk";
                 final String fileName = "alipay.apk";
                 String fileDir = Environment.getExternalStorageDirectory() + File.separator;
                 RetrofitClient
@@ -250,7 +249,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .subscribe(new DownloadObserver(fileDir,fileName) {
                             @Override
                             public void onError(int code, String s) {
-
+                                download_http.setEnabled(true);
+                                download_http.setText("下载失败");
                             }
                             @Override
                             public void onProgress(long bytesRead, long contentLength, int progress) {
