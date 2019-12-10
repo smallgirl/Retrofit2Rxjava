@@ -73,7 +73,7 @@ public class CountingRequestBody extends RequestBody {
                     .subscribe(new Consumer<Integer>() {
                         @Override
                         public void accept(@NonNull Integer integer) throws Exception {
-                            mUploadListener.onRequestProgress(bytesWritten, contentLength(),(int)(bytesWritten*100/contentLength()));
+                            mUploadListener.onRequestProgress(bytesWritten, contentLength(), (int) (bytesWritten * 100 / contentLength()));
                         }
                     });
 

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.ResponseBody;
+
 /**
  * Created by wanghaitao on 2018/2/28.
  * <p>

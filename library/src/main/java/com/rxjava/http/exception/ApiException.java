@@ -10,6 +10,7 @@ public class ApiException extends Exception {
 
     public int code;
     public String message;
+    public String response;
 
     public ApiException(Throwable throwable, int code) {
         super(throwable);

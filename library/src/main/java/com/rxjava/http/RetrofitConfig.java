@@ -1,5 +1,6 @@
 package com.rxjava.http;
 
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -7,6 +8,9 @@ import com.rxjava.http.interceptor.HeaderInterceptor;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -66,8 +70,14 @@ public class RetrofitConfig {
         this.headerMaps = headerMaps;
         return this;
     }
-    public  <K> K creatApiService(Class<K> cls)  {
-        OkHttpClient.Builder okhttpBuilder = new OkHttpClient.Builder();
+
+
+    public OkHttpClient getOkHttpClient() {
+        return getOkHttpClient(showLog);
+    }
+
+    public OkHttpClient getOkHttpClient(boolean showLog) {
+        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
         if (showLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                 @Override
@@ -76,23 +86,34 @@ public class RetrofitConfig {
                 }
             });
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            okhttpBuilder.addInterceptor(loggingInterceptor);
+            okHttpBuilder.addInterceptor(loggingInterceptor);
         }
-        if (null!=headerMaps){
-            okhttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
+        if (null != headerMaps) {
+            okHttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
         }
-        okhttpBuilder
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            try {
+                X509TrustManager trustManager = TLSSocketFactory.systemDefaultTrustManager();
+                SSLSocketFactory sslSocketFactory = TLSSocketFactory.sslSocketFactory(trustManager);
+                okHttpBuilder.sslSocketFactory(sslSocketFactory, trustManager);
+            } catch (Exception exc) {
+            }
+        }
+        return okHttpBuilder
                 .addInterceptor(new HeaderInterceptor(headerMaps))
                 .readTimeout(readTimeout > 0 ? readTimeout : READ_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(writeTimeout > 0 ? writeTimeout : READ_TIMEOUT, TimeUnit.SECONDS)
                 .connectTimeout(connectTimeout > 0 ? connectTimeout : DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build();
-        OkHttpClient okHttpClient =okhttpBuilder.build();
+    }
+
+    public <K> K createApiService(Class<K> cls) {
+
         Retrofit retrofit = new Retrofit.Builder()
-                .client(okHttpClient)
+                .client(getOkHttpClient())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(null != factory ? factory : GsonConverterFactory.create())
-                .baseUrl(TextUtils.isEmpty(baseUrl)?RetrofitClient.baseUrl:baseUrl)
+                .baseUrl(TextUtils.isEmpty(baseUrl) ? RetrofitClient.baseUrl : baseUrl)
                 .build();
 
         return retrofit.create(cls);

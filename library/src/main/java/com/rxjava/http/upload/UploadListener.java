@@ -7,5 +7,5 @@ package com.rxjava.http.upload;
  */
 
 public interface UploadListener {
-    void onRequestProgress(long bytesWritten, long contentLength,int progress);
+    void onRequestProgress(long bytesWritten, long contentLength, int progress);
 }

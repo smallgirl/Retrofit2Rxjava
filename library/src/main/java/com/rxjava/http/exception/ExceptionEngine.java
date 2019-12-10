@@ -13,6 +13,9 @@ import java.net.UnknownHostException;
 import java.net.UnknownServiceException;
 import java.text.ParseException;
 
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLPeerUnverifiedException;
+
 import retrofit2.HttpException;
 
 /**
@@ -33,13 +36,13 @@ public class ExceptionEngine {
     private static final int SERVICE_UNAVAILABLE = 503;
     private static final int GATEWAY_TIMEOUT = 504;
 
-    public static ApiException handleException(Throwable throwable){
-        Log.e("e",throwable.getMessage()+throwable);
+    public static ApiException handleException(Throwable throwable) {
+        Log.e("e", throwable.getMessage() + throwable);
         ApiException ex;
-        if (throwable instanceof HttpException){             //HTTP错误
+        if (throwable instanceof HttpException) {             //HTTP错误
             HttpException httpException = (HttpException) throwable;
             ex = new ApiException(throwable, ErrorType.HTTP_ERROR);
-            switch(httpException.code()){
+            switch (httpException.code()) {
                 case UNAUTHORIZED:
                     ex.message = "当前请求需要用户验证";
                     break;
@@ -68,30 +71,33 @@ public class ExceptionEngine {
                     ex.message = "网络错误";  //其它均视为网络错误
                     break;
             }
-        } else if (throwable instanceof ServerException){    //服务器返回的错误
+        } else if (throwable instanceof ServerException) {    //服务器返回的错误
             ServerException resultException = (ServerException) throwable;
             ex = new ApiException(resultException, resultException.code);
             ex.message = resultException.message;
+            ex.response = resultException.response;
             return ex;
-        }  else if (throwable instanceof SocketTimeoutException) {
+        } else if (throwable instanceof SocketTimeoutException) {
             ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
-            ex.message ="服务器响应超时";
+            ex.message = "服务器响应超时";
         } else if (throwable instanceof ConnectException) {
             ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
             ex.message = "网络连接异常，请检查网络";
-        }  else if (throwable instanceof UnknownHostException || throwable instanceof UnknownServiceException || throwable instanceof IOException) {
+        } else if (throwable instanceof UnknownHostException || throwable instanceof UnknownServiceException || throwable instanceof IOException) {
             ex = new ApiException(throwable, ErrorType.NO_NETWORK);
             ex.message = "设备当前未联网，请检查网络设置";
+            if (throwable instanceof SSLPeerUnverifiedException || throwable instanceof SSLHandshakeException) {
+                ex.message = "设备当前未联网，请检查网络设置";
+            }
         } else if (throwable instanceof RuntimeException) {
             ex = new ApiException(throwable, ErrorType.RUN_TIME);
             ex.message = "很抱歉,程序运行出现了错误";
-        }else if (throwable instanceof JsonParseException
+        } else if (throwable instanceof JsonParseException
                 || throwable instanceof JSONException
-                || throwable instanceof ParseException){
+                || throwable instanceof ParseException) {
             ex = new ApiException(throwable, ErrorType.PARSE_ERROR);
             ex.message = "解析错误";
-        }
-        else {
+        } else {
             ex = new ApiException(throwable, ErrorType.UNKNOWN);
             ex.message = "未知错误";
         }

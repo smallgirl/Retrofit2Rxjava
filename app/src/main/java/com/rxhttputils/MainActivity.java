@@ -190,10 +190,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                            }
 //                        });
                 RetrofitClient
-                        .newRetofit()
+                        .newRetrofit()
                         .showLog(true)
                         .factory(CustomGoonConvertFactory.create(false))
-                        .creatApiService(ApiService.class)
+                        .createApiService(ApiService.class)
                         .getUser3()
                         .compose(Transformer.<String>switchSchedulers(loading_dialog))
                         .subscribe(new BaseObserver<String>() {
@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 map.put("file",new File(file));
                 map.put("name","test");
                 RetrofitClient
-                        .creatUploadService(ApiService.class, new UploadListener() {
+                        .createUploadService(ApiService.class, new UploadListener() {
                             @Override
                             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                                 upload_http.setText( progress+"%");

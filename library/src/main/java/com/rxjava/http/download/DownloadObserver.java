@@ -26,7 +26,7 @@ public abstract class DownloadObserver implements Observer<ResponseBody> {
     private String fileDir;
     private String fileName;
 
-    public DownloadObserver(String fileDir,String fileName) {
+    public DownloadObserver(String fileDir, String fileName) {
         this.fileDir = fileDir;
         this.fileName = fileName;
     }
@@ -102,7 +102,7 @@ public abstract class DownloadObserver implements Observer<ResponseBody> {
     public void onSubscribe(@NonNull Disposable d) {
 
     }
-    public abstract void onError(int code,String s) ;
+    public abstract void onError(int code, String s) ;
     public abstract void onProgress(long bytesRead, long contentLength,int progress) ;
     public abstract void onSuccess(String filePath) ;
 }

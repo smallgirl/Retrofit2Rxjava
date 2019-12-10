@@ -18,6 +18,7 @@ public abstract class BaseObserver<T> implements Observer<T> {
     public void onSubscribe(@NonNull Disposable d) {
 
     }
+
     @Override
     public void onNext(@NonNull T t) {
         onSuccess(t);
@@ -31,6 +32,8 @@ public abstract class BaseObserver<T> implements Observer<T> {
     @Override
     public void onComplete() {
     }
-    public abstract void onError(ApiException exception) ;
-    public abstract void onSuccess( T t) ;
+
+    public abstract void onSuccess(T t);
+
+    public abstract void onError(ApiException exception);
 }

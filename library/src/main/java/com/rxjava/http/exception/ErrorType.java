@@ -32,5 +32,5 @@ public interface ErrorType {
      */
     int HTTP_ERROR = 1004;
 
-    int RUN_TIME= 1005;
+    int RUN_TIME = 1005;
 }

@@ -23,7 +23,7 @@ public class UpLoadProgressInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-        if(null == request.body()){
+        if (null == request.body()) {
             return chain.proceed(request);
         }
 

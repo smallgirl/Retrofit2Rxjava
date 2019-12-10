@@ -28,11 +28,11 @@ public class ConvertUtil {
                 return data;
             } else {
                 String message = response.optString("msg", "");
-                throw new ServerException(code, message);
+                throw new ServerException(code, message, result);
             }
 
         } catch (JSONException e) {
-            throw new ServerException(ErrorType.PARSE_ERROR, "JSON解析异常");
+            throw new ServerException(ErrorType.PARSE_ERROR, "JSON解析异常", result);
 
         }
 

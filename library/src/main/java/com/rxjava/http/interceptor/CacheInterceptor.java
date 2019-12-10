@@ -20,8 +20,9 @@ import okhttp3.Response;
 public class CacheInterceptor implements Interceptor {
 
     private Context context;
+
     public CacheInterceptor(Context context) {
-        this.context=context;
+        this.context = context;
     }
 
     @Override
@@ -56,7 +57,7 @@ public class CacheInterceptor implements Interceptor {
      *
      * @return 返回值
      */
-    public  boolean isNetworkConnected() {
+    public boolean isNetworkConnected() {
         if (context != null) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
