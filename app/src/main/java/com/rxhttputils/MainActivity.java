@@ -31,6 +31,7 @@ import java.util.Map;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import okhttp3.ResponseBody;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -205,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 RetrofitClient
                         .createDownloadService(ApiService.class)
                         .downloadFile(url)
+                        .compose(Transformer.<ResponseBody>switchSchedulers())
                         .subscribe(new DownloadObserver(fileDir, fileName) {
                             @Override
                             public void onError(int code, String s) {
