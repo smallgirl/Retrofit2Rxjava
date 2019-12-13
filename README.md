@@ -77,17 +77,34 @@ public class User {
 public interface ApiService {
 
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <User> getUser();
-    
+    Observable<User> getUser();
+
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <Response<User>> getUserResponse();
+    Observable<DataNull> getUserNull();
+
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable<String> getUserString();
+
+    @GET("http://zzuli.gitee.io/api/user.html")
+    Observable<Response<User>> getUserResponse();
+
+    @GET("http://zzuli.gitee.io/api/userlist.html")
+    Observable<List<User>> getUserList();
+
+    @Multipart
+    @POST
+    Observable<String> uploadFile(@Url String uploadUrl, @Part List<MultipartBody.Part> partList);
+
+    @Streaming
+    @GET
+    Observable<ResponseBody> downloadFile(@Url String fileUrl);
 
 }
 
 RetrofitClient
-        .newRetofit()
+        .newRetrofit()
         .showLog(true)
-        .creatApiService(ApiService.class)
+        .createApiService(ApiService.class)
         .getUser()
         .compose(Transformer.<User>switchSchedulers(loading_dialog))
         .subscribe(new BaseObserver<User>() {
@@ -151,13 +168,13 @@ RetrofitClient
 上传代码
 ```java
 String uploadUrl = "http://api.vd.cn/info/getbonusnotice/";
-String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"2.jpg";
+String file = Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator+"test.jpg";
 upload_http.setEnabled(false);
 Map<String, Object> map =new HashMap<String, Object>();
 map.put("file",new File(file));
 map.put("name","test");
 RetrofitClient
-        .creatUploadService(ApiService.class, new UploadListener() {
+        .createUploadService(ApiService.class, new UploadListener() {
             @Override
             public void onRequestProgress(long bytesWritten, long contentLength, int progress) {
                 upload_http.setText( progress+"%");
@@ -175,16 +192,19 @@ RetrofitClient
                 upload_http.setEnabled(true);
             }
         })
-        .subscribe(new Consumer<ResponseBody>() {
+        .subscribe(new BaseObserver<String>() {
             @Override
-            public void accept(@NonNull ResponseBody responseBody) throws Exception {
-                upload_http.setText( "上传完毕");
+            public void onSuccess(String s) {
+                upload_http.setText("上传完毕");
+                Log.e("tag", "responseBody" +s);
             }
-        }, new Consumer<Throwable>() {
+
             @Override
-            public void accept(@NonNull Throwable throwable) throws Exception {
-                upload_http.setText( "上传失败"+throwable);
+            public void onError(ApiException exception) {
+                upload_http.setText("上传失败");
+                Log.e("tag", "responseBody" + exception.response);
             }
+
         });
 
 ```
@@ -195,6 +215,7 @@ String url = "https://t.alipayobjects.com/L1/71/100/and/alipay_wap_main.apk";
 final String fileName = "alipay.apk";
 String fileDir = getExternalFilesDir(null) + File.separator;
 RetrofitClient
+        .createDownloadService(ApiService.class)
         .downloadFile(url)
         .subscribe(new DownloadObserver(fileDir,fileName) {
             @Override

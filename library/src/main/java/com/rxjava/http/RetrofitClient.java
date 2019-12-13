@@ -1,20 +1,19 @@
 package com.rxjava.http;
 
 
-import com.rxjava.http.download.DownloadRetrofit;
 import com.rxjava.http.gsonconverter.CustomGoonConvertFactory;
+import com.rxjava.http.upload.UpLoadProgressInterceptor;
 import com.rxjava.http.upload.UploadListener;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.Observable;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -23,7 +22,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
 
     private static Retrofit retrofit;
-    private static boolean showLog;
+    private static boolean showLog = true;
     protected static String baseUrl = "http://service.jd100.com/cgi-bin/phone/";
 
     public static void setShowLog(boolean showLog) {
@@ -44,7 +43,7 @@ public class RetrofitClient {
     public static <K> K getApiService(Class<K> cls) {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .client(new RetrofitConfig().getOkHttpClient(showLog))
+                    .client(new RetrofitConfig().createOkHttpClient(showLog))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .addConverterFactory(CustomGoonConvertFactory.create(true))
                     .baseUrl(baseUrl)
@@ -81,23 +80,14 @@ public class RetrofitClient {
 
     public static <K> K createUploadService(Class<K> cls, UploadListener listener) {
 
-
-//        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-//        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
-//        MultipartBody.Part no = MultipartBody.Part.createFormData("name", "myName");
-
-
-//        Map<String, RequestBody> map = new HashMap<>();
-//        RequestBody body = RequestBody.create(MediaType.parse("application/octet-stream"), file);
-//        map.put("file\"; filename=\"" + file.getName() + " ", body);
-//        map.put("nickname",RequestBody.create(null,nickname));
         OkHttpClient okHttpClient = new RetrofitConfig()
+                .addInterceptor(new UpLoadProgressInterceptor(listener))
                 .connectTimeout(1000)
                 .writeTimeout(1000)
-                .getOkHttpClient();
+                .createOkHttpClient();
         return new Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(CustomGoonConvertFactory.create(false))
                 .client(okHttpClient)
                 .baseUrl(baseUrl)
                 .build()
@@ -107,10 +97,24 @@ public class RetrofitClient {
     /**
      * 下载文件
      *
-     * @param fileUrl
+     * @param cls
+     * @param <K>
      * @return
      */
-    public static Observable<ResponseBody> downloadFile(String fileUrl) {
-        return DownloadRetrofit.downloadFile(fileUrl);
+    public static <K> K createDownloadService(Class<K> cls) {
+        Map<String, Object> headerMaps = new HashMap<>();
+        headerMaps.put("Accept-Encoding", "identity");// 服务器文件进度
+        OkHttpClient okHttpClient = new RetrofitConfig()
+                .headerMaps(headerMaps)
+                .connectTimeout(1000)
+                .writeTimeout(1000)
+                .createOkHttpClient();
+        return new Retrofit.Builder()
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
+                .baseUrl(baseUrl)
+                .build()
+                .create(cls);
     }
 }

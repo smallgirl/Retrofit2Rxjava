@@ -6,12 +6,15 @@ import android.util.Log;
 
 import com.rxjava.http.interceptor.HeaderInterceptor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Converter;
@@ -33,8 +36,9 @@ public class RetrofitConfig {
 
     public static final int READ_TIMEOUT = 20;
 
-
     private Map<String, Object> headerMaps;
+
+    private List<Interceptor> interceptorList;
 
     public RetrofitConfig showLog(boolean showLog) {
         this.showLog = showLog;
@@ -71,12 +75,19 @@ public class RetrofitConfig {
         return this;
     }
 
-
-    public OkHttpClient getOkHttpClient() {
-        return getOkHttpClient(showLog);
+    public RetrofitConfig addInterceptor(Interceptor interceptor) {
+        if (null == interceptorList) {
+            interceptorList = new ArrayList<>();
+        }
+        interceptorList.add(interceptor);
+        return this;
     }
 
-    public OkHttpClient getOkHttpClient(boolean showLog) {
+    OkHttpClient createOkHttpClient() {
+        return createOkHttpClient(showLog);
+    }
+
+    public OkHttpClient createOkHttpClient(boolean showLog) {
         OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
         if (showLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -91,6 +102,12 @@ public class RetrofitConfig {
         if (null != headerMaps) {
             okHttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
         }
+        if (null != interceptorList) {
+            for (Interceptor interceptor : interceptorList) {
+                okHttpBuilder.addInterceptor(interceptor);
+            }
+        }
+
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             try {
                 X509TrustManager trustManager = TLSSocketFactory.systemDefaultTrustManager();
@@ -110,7 +127,7 @@ public class RetrofitConfig {
     public <K> K createApiService(Class<K> cls) {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .client(getOkHttpClient())
+                .client(createOkHttpClient())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(null != factory ? factory : GsonConverterFactory.create())
                 .baseUrl(TextUtils.isEmpty(baseUrl) ? RetrofitClient.baseUrl : baseUrl)

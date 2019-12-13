@@ -19,6 +19,7 @@ import okio.Sink;
  */
 
 public class CountingRequestBody extends RequestBody {
+
     private RequestBody mRequestBody;
     private UploadListener mUploadListener;
     private CountingSink mCountingSink;
@@ -67,12 +68,13 @@ public class CountingRequestBody extends RequestBody {
             super.write(source, byteCount);
             bytesWritten += byteCount;
             Observable
-                    .just(0)
+                    .just(bytesWritten)
                     .distinctUntilChanged()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Consumer<Integer>() {
+                    .subscribe(new Consumer<Long>() {
                         @Override
-                        public void accept(@NonNull Integer integer) throws Exception {
+                        public void accept(@NonNull Long bytesWritten) throws Exception {
+
                             mUploadListener.onRequestProgress(bytesWritten, contentLength(), (int) (bytesWritten * 100 / contentLength()));
                         }
                     });

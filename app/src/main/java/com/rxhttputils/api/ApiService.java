@@ -14,6 +14,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
+import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
 /**
@@ -25,28 +26,25 @@ import retrofit2.http.Url;
 public interface ApiService {
 
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <User> getUser();
-    @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <DataNull> getUser1();
+    Observable<User> getUser();
 
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <ResponseBody> getUser2();
+    Observable<DataNull> getUserNull();
 
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <String> getUser3();
+    Observable<String> getUserString();
 
     @GET("http://zzuli.gitee.io/api/user.html")
-    Observable <Response<User>> getUserResponse();
+    Observable<Response<User>> getUserResponse();
 
     @GET("http://zzuli.gitee.io/api/userlist.html")
-    Observable <List<User>> getUserList();
+    Observable<List<User>> getUserList();
 
     @Multipart
     @POST
-    Observable<ResponseBody> uploadFile(@Url String uploadUrl, @Part MultipartBody.Part file, @Part MultipartBody.Part  username );
+    Observable<String> uploadFile(@Url String uploadUrl, @Part List<MultipartBody.Part> partList);
 
-
-    @Multipart
-    @POST
-    Observable<ResponseBody> uploadFile(@Url String uploadUrl,@Part List<MultipartBody.Part> partList);
+    @Streaming
+    @GET
+    Observable<ResponseBody> downloadFile(@Url String fileUrl);
 }
