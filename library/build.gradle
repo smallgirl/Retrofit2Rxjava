@@ -1,6 +1,5 @@
 apply plugin: 'com.android.library'
 
-group='com.github.lygttpod'
 android {
     compileSdkVersion 28
     buildToolsVersion '25.0.2'

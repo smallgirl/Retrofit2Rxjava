@@ -6,14 +6,17 @@ import com.rxjava.http.upload.UpLoadProgressInterceptor;
 import com.rxjava.http.upload.UploadListener;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
+import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -23,7 +26,13 @@ public class RetrofitClient {
 
     private static Retrofit retrofit;
     private static boolean showLog = true;
-    protected static String baseUrl = "http://service.jd100.com/cgi-bin/phone/";
+    protected static String baseUrl = "http://service.jd100.com/cgi-bin/phone/";;
+    protected static List<Interceptor> defaultInterceptors = new ArrayList<>();
+    public static Class tokenInvalidClass;
+
+    public static void addDefaultInterceptors(Interceptor interceptor) {
+        defaultInterceptors.add(interceptor);
+    }
 
     public static void setShowLog(boolean showLog) {
         RetrofitClient.showLog = showLog;
@@ -52,8 +61,9 @@ public class RetrofitClient {
         return retrofit.create(cls);
     }
 
+
     public static RetrofitConfig newRetrofit() {
-        return new RetrofitConfig();
+        return new RetrofitConfig().showLog(true);
     }
 
 
@@ -80,18 +90,18 @@ public class RetrofitClient {
 
     public static <K> K createUploadService(Class<K> cls, UploadListener listener) {
 
-        OkHttpClient okHttpClient = new RetrofitConfig()
+        return createUploadService(cls, listener, GsonConverterFactory.create());
+    }
+
+    public static <K> K createUploadService(Class<K> cls, UploadListener listener, Converter.Factory factory) {
+
+        return new RetrofitConfig()
                 .addInterceptor(new UpLoadProgressInterceptor(listener))
-                .connectTimeout(1000)
-                .writeTimeout(1000)
-                .createOkHttpClient();
-        return new Retrofit.Builder()
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(CustomGoonConvertFactory.create(false))
-                .client(okHttpClient)
-                .baseUrl(baseUrl)
-                .build()
-                .create(cls);
+                .connectTimeout(20)
+                .writeTimeout(20)
+                .showLog(false)// log拦截器会导致 回调走2次 不要开启
+                .factory(factory)
+                .createApiService(cls);
     }
 
     /**

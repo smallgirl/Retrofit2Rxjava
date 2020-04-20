@@ -8,15 +8,16 @@ package com.rxjava.http.exception;
 
 
 public class ServerException extends RuntimeException {
+
     // 异常处理，为速度，不必要设置getter和setter
     public int code;
-    public String message;
+    public String msg;
     public String response;
 
-    public ServerException(int code, String message, String response) {
-        super(message);
+    public ServerException(int code, String msg, String response) {
+        super(msg);
         this.code = code;
-        this.message = message;
+        this.msg = msg;
         this.response = response;
     }
 }

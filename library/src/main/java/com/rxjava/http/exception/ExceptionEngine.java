@@ -37,71 +37,57 @@ public class ExceptionEngine {
     private static final int GATEWAY_TIMEOUT = 504;
 
     public static ApiException handleException(Throwable throwable) {
-        Log.e("e", throwable.getMessage() + throwable);
+        Log.e("handleException", throwable.toString());
         ApiException ex;
         if (throwable instanceof HttpException) {             //HTTP错误
             HttpException httpException = (HttpException) throwable;
             ex = new ApiException(throwable, ErrorType.HTTP_ERROR);
             switch (httpException.code()) {
                 case UNAUTHORIZED:
-                    ex.message = "当前请求需要用户验证";
-                    break;
-                case FORBIDDEN:
-                    ex.message = "服务器已经理解请求，但是拒绝执行它";
-                    break;
-                case NOT_FOUND:
-                    ex.message = "服务器异常，请稍后再试";
-                    break;
-                case REQUEST_TIMEOUT:
-                    ex.message = "请求超时";
-                    break;
-                case GATEWAY_TIMEOUT:
-                    ex.message = "服务器没有从远端服务器得到及时的响应";
-                    break;
-                case INTERNAL_SERVER_ERROR:
-                    ex.message = "服务器内部错误";
-                    break;
-                case BAD_GATEWAY:
-                    ex.message = "服务器接收到远端服务器的错误响应";
-                    break;
-                case SERVICE_UNAVAILABLE:
-                    ex.message = "服务器维护或者过载，服务器当前无法处理请求";
+                    ex.msg = "登录过期";
+                    handTokenInvalid();
                     break;
                 default:
-                    ex.message = "网络错误";  //其它均视为网络错误
+                    ex.msg = "服务器错误，请稍后重试";  //其它均视为网络错误
                     break;
             }
         } else if (throwable instanceof ServerException) {    //服务器返回的错误
             ServerException resultException = (ServerException) throwable;
             ex = new ApiException(resultException, resultException.code);
-            ex.message = resultException.message;
+            ex.msg = resultException.msg;
             ex.response = resultException.response;
-            return ex;
-        } else if (throwable instanceof SocketTimeoutException) {
+        } if (throwable instanceof SocketTimeoutException) {
             ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
-            ex.message = "服务器响应超时";
+            ex.msg = "网络异常，服务器响应超时";
         } else if (throwable instanceof ConnectException) {
             ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
-            ex.message = "网络连接异常，请检查网络";
+            ex.msg = "网络异常，请检查网络后重试";
         } else if (throwable instanceof UnknownHostException || throwable instanceof UnknownServiceException || throwable instanceof IOException) {
-            ex = new ApiException(throwable, ErrorType.NO_NETWORK);
-            ex.message = "设备当前未联网，请检查网络设置";
+            ex = new ApiException(throwable, ErrorType.NETWORK_ERROR);
+            ex.msg = "网络异常，请检查网络后重试";
             if (throwable instanceof SSLPeerUnverifiedException || throwable instanceof SSLHandshakeException) {
-                ex.message = "设备当前未联网，请检查网络设置";
+                ex.msg = "网络异常，https证书异常";
             }
-        } else if (throwable instanceof RuntimeException) {
-            ex = new ApiException(throwable, ErrorType.RUN_TIME);
-            ex.message = "很抱歉,程序运行出现了错误";
         } else if (throwable instanceof JsonParseException
                 || throwable instanceof JSONException
                 || throwable instanceof ParseException) {
             ex = new ApiException(throwable, ErrorType.PARSE_ERROR);
-            ex.message = "解析错误";
+            ex.msg = "解析错误";
+        } else if (throwable instanceof RuntimeException) {
+            ex = new ApiException(throwable, ErrorType.RUN_TIME);
+            ex.msg = "很抱歉,程序运行出现了错误";
         } else {
             ex = new ApiException(throwable, ErrorType.UNKNOWN);
-            ex.message = "未知错误";
+            ex.msg = "未知错误";
         }
         return ex;
+    }
+
+    private static void handTokenInvalid() {
+//        Intent intent = new Intent();
+//        intent.setClass(BaseApplication.getInstance(), RetrofitClient.tokenInvalidClass);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        BaseApplication.getInstance().startActivity(intent);
     }
 
 }

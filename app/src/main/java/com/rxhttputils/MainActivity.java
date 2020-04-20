@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                .subscribe(new BaseObserver<List<User>>() {
 //                    @Override
 //                    public void onError(ApiException exception) {
-//                        responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                        responseTv.setText("onError-->"+exception.code+ "-->"+exception.msg);
 //                        loading_dialog.dismiss();
 //                    }
 //
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                .subscribe(new BaseObserver<List<User>>() {
 //                    @Override
 //                    public void onError(ApiException exception) {
-//                        Log.e("tag","error"+exception.getMessage());
+//                        Log.e("tag","error"+exception.msg);
 //                    }
 //
 //                    @Override
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        .subscribe(new BaseObserver<User>() {
 //                            @Override
 //                            public void onError(ApiException exception) {
-//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.message);
+//                                responseTv.setText("onError-->"+exception.code+ "-->"+exception.msg);
 //                                loading_dialog.dismiss();
 //                            }
 //
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .subscribe(new BaseObserver<String>() {
                             @Override
                             public void onError(ApiException exception) {
-                                responseTv.setText("onError-->" + exception.code + "-->" + exception.message);
+                                responseTv.setText("onError-->" + exception.code + "-->" + exception.msg);
                                 loading_dialog.dismiss();
                             }
 
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .subscribe(new BaseObserver<List<User>>() {
                             @Override
                             public void onError(ApiException exception) {
-                                responseTv.setText("onError-->" + exception.code + "-->" + exception.message);
+                                responseTv.setText("onError-->" + exception.code + "-->" + exception.msg);
                                 loading_dialog.dismiss();
                             }
 

@@ -2,6 +2,7 @@ package com.rxjava.http;
 
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import com.rxjava.http.interceptor.HeaderInterceptor;
@@ -32,14 +33,20 @@ public class RetrofitConfig {
 
     private Converter.Factory factory;
 
-    public static final int DEFAULT_TIMEOUT = 20;
+    public static final int DEFAULT_TIMEOUT = 10;
 
-    public static final int READ_TIMEOUT = 20;
+    public static final int READ_TIMEOUT = 10;
 
-    private Map<String, Object> headerMaps;
+    private Map<String, Object> headerMaps = new ArrayMap<>();
 
     private List<Interceptor> interceptorList;
 
+    private boolean useDefaultInterceptors = true;
+
+    public RetrofitConfig useDefaultInterceptors(boolean useDefaultInterceptors) {
+        this.useDefaultInterceptors = useDefaultInterceptors;
+        return this;
+    }
     public RetrofitConfig showLog(boolean showLog) {
         this.showLog = showLog;
         return this;
@@ -71,7 +78,7 @@ public class RetrofitConfig {
     }
 
     public RetrofitConfig headerMaps(Map<String, Object> headerMaps) {
-        this.headerMaps = headerMaps;
+        this.headerMaps.putAll(headerMaps);
         return this;
     }
 
@@ -89,6 +96,19 @@ public class RetrofitConfig {
 
     public OkHttpClient createOkHttpClient(boolean showLog) {
         OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+        // 单个配置拦截器
+        if (null != interceptorList) {
+            for (Interceptor interceptor : interceptorList) {
+                okHttpBuilder.addInterceptor(interceptor);
+            }
+        }
+        //全局拦截器
+        if (null != RetrofitClient.defaultInterceptors && useDefaultInterceptors) {
+            for (Interceptor interceptor : RetrofitClient.defaultInterceptors) {
+                okHttpBuilder.addInterceptor(interceptor);
+            }
+        }
+        //Log拦截器
         if (showLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                 @Override
@@ -99,15 +119,6 @@ public class RetrofitConfig {
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             okHttpBuilder.addInterceptor(loggingInterceptor);
         }
-        if (null != headerMaps) {
-            okHttpBuilder.addInterceptor(new HeaderInterceptor(headerMaps));
-        }
-        if (null != interceptorList) {
-            for (Interceptor interceptor : interceptorList) {
-                okHttpBuilder.addInterceptor(interceptor);
-            }
-        }
-
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             try {
                 X509TrustManager trustManager = TLSSocketFactory.systemDefaultTrustManager();
@@ -116,6 +127,7 @@ public class RetrofitConfig {
             } catch (Exception exc) {
             }
         }
+
         return okHttpBuilder
                 .addInterceptor(new HeaderInterceptor(headerMaps))
                 .readTimeout(readTimeout > 0 ? readTimeout : READ_TIMEOUT, TimeUnit.SECONDS)
